@@ -1,0 +1,10 @@
+node_modules/
+out/
+.next/
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
+
+# The Accord repository, checked out here by CI (website.md §9). Locally it
+# lives at ../app; never commit or modify it from the website.
+/app/

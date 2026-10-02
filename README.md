@@ -194,10 +194,11 @@ analytics. When the owner picks the final domain, update it in
   build reads the committed `accord/` snapshot) and runs check-facts, lint,
   typecheck, check:snippets, build, check:links, then uploads `out/`.
 - **drift** — on pushes to main and on a daily schedule, checks out
-  `crossben/accordsync` into `app/` with a read-only fine-grained PAT stored
-  in the secret `ACCORD_APP_READ_TOKEN` (Contents: read on that repo only —
-  the owner creates it), re-runs `sync:app --require`, and fails when the
-  committed `accord/` differs from the repository. When it fires: run
+  `crossben/accordsync` into `accord-src/` (never `app/` — that name is the
+  website's own Next.js routes directory) with a read-only fine-grained PAT
+  stored in the secret `ACCORD_APP_READ_TOKEN` (Contents: read on that repo
+  only — the owner creates it), re-runs `sync:app --require`, and fails when
+  the committed `accord/` differs from the repository. When it fires: run
   `npm run sync:app`, update facts/copy if check-facts asks, and commit the
   refreshed snapshot.
 

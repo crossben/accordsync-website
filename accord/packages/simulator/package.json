@@ -1,14 +1,27 @@
 {
   "name": "@accordsync/simulator",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Deterministic network and device simulator for Accord convergence tests",
+  "keywords": [
+    "offline-first",
+    "local-first",
+    "sync",
+    "crdt",
+    "hlc",
+    "conflict-resolution",
+    "postgresql"
+  ],
+  "homepage": "https://github.com/crossben/accordsync#readme",
+  "bugs": {
+    "url": "https://github.com/crossben/accordsync/issues"
+  },
   "license": "Apache-2.0",
-  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/crossben/accordsync.git",
     "directory": "packages/simulator"
   },
+  "type": "module",
   "exports": {
     ".": {
       "@accordsync/source": "./src/index.ts",
@@ -17,9 +30,15 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "tsdown src/index.ts --format esm --dts --clean --platform node --target node22",
     "typecheck": "tsc -p tsconfig.json",

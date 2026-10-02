@@ -110,6 +110,11 @@ docker compose up --build   # PostgreSQL + server on :8080
 curl localhost:8080/health
 ```
 
+## Security
+
+Report vulnerabilities privately: see [SECURITY.md](SECURITY.md). Before deploying, go through the
+[security checklist](docs/security.md).
+
 ## Licence
 
 [Apache-2.0](LICENSE).

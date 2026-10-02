@@ -49,11 +49,12 @@ jobs:
       # Read-only. ACCORD_APP_READ_TOKEN is a fine-grained PAT with
       # Contents: read on crossben/accordsync only (created by the owner,
       # website.md section 9). Once that repository is public, the `token:`
-      # line can be dropped.
+      # line can be dropped. Checked out as accord-src — never `app`, which is
+      # the website's own Next.js routes directory.
       - uses: actions/checkout@v4
         with:
           repository: crossben/accordsync
-          path: app
+          path: accord-src
           token: ${{ secrets.ACCORD_APP_READ_TOKEN }}
 
       - uses: actions/setup-node@v4
@@ -62,6 +63,8 @@ jobs:
           cache: npm
 
       - run: node scripts/sync-app.mjs --require
+        env:
+          ACCORD_APP_DIR: accord-src
       - name: Fail if the snapshot fell behind the repository
         run: |
           if ! git diff --exit-code -- accord/; then

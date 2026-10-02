@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+/* Dark mode via data-theme on <html> (not a class: React owns <html className>). The inline
+   theme script in <head> sets it (from localStorage, else prefers-color-scheme) before first
+   paint (website.md section 2). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Palette (website.md section 2). Defined as CSS variables; every pair that body-size
+   text can hit is ≥ 4.5:1 — the measured ratios are listed in README.md. Never
+   change a value here without re-checking contrast. */
+:root {
+  --bg: #f3f5f1;
+  --surface: #ffffff;
+  --ink: #16202a;
+  --muted: #56616b;
+  --accent: #1d6b57;
+  --conflict: #9a4a12;
+  --line: #dce2dc;
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg: #0f161c;
+  --surface: #18222b;
+  --ink: #e8ede9;
+  --muted: #9aa7b0;
+  --accent: #4fc59e;
+  --conflict: #f0a160;
+  --line: #26313a;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-conflict: var(--conflict);
+  --color-line: var(--line);
+  --font-sans: var(--font-inter-tight), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  text-wrap: pretty;
+}
+
+/* Visible focus rings everywhere (website.md section 8). */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* Skip link: hidden until focused. */
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 100;
+  transition: top 150ms ease;
+}
+.skip-link:focus {
+  top: 0.75rem;
+}
+
+/* Shiki dual theme (see lib/shiki.ts): the token classes define
+   --shiki-light/--shiki-dark custom properties; the theme in force decides which
+   one is the colour. Backgrounds are transparent — the block supplies its own. */
+.shiki span {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style, inherit);
+  font-weight: var(--shiki-light-font-weight, inherit);
+}
+html[data-theme="dark"] .shiki span {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style, inherit);
+  font-weight: var(--shiki-dark-font-weight, inherit);
+}
+.shiki,
+.shiki span {
+  background-color: transparent !important;
+}
+
+/* GSAP reveals: keep final state when animations are done, and never animate
+   for reduced-motion users (the GSAP code checks matchMedia before running). */
+.reveal {
+  opacity: 1;
+}
+
+/* The hero scene and the timeline have fixed dimensions (CLS < 0.05, section 8). */
+.hero-scene-container {
+  contain: strict;
+}

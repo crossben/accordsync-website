@@ -1,0 +1,57 @@
+name: release
+
+# Push a tag like v0.1.0 to publish the npm packages and the server image.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write # npm provenance
+  packages: write # ghcr.io
+
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - name: Check the tag matches the package versions
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          for p in packages/*/package.json; do
+            v=$(node -p "require('./$p').version")
+            [ "$v" = "$tag" ] || { echo "$p is $v, tag is $tag"; exit 1; }
+          done
+      - run: pnpm lint && pnpm typecheck && pnpm build
+      - run: pnpm test
+        env:
+          ACCORD_PROPERTY_RUNS: '2000'
+          ACCORD_SIM_RUNS: '3000'
+      - run: pnpm -r --filter './packages/*' publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  image:
+    runs-on: ubuntu-latest
+    needs: npm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/crossben/accordsync-server:${{ github.ref_name }}
+            ghcr.io/crossben/accordsync-server:latest

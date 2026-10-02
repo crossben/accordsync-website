@@ -58,9 +58,6 @@ function hlc() {
   return `${lastWall}:${String(counter).padStart(5, '0')}:${me.device}`;
 }
 
-function setup() {}
-export { setup };
-
 export default function () {
   if (!me) {
     const vu = exec.vu.idInTest;
@@ -92,7 +89,10 @@ export default function () {
     else ops.push(op(target, 'documents', 'add', { element: `doc-${seq % 7}` }));
   }
 
-  const push = http.post(`${BASE}/v1/push`, JSON.stringify({ ops }), { headers, tags: { name: 'push' } });
+  const push = http.post(`${BASE}/v1/push`, JSON.stringify({ ops }), {
+    headers,
+    tags: { name: 'push' },
+  });
   pushMs.add(push.timings.duration);
   check(push, {
     'push 200': (r) => r.status === 200,
@@ -100,7 +100,10 @@ export default function () {
   });
   if (push.status === 200) opsPushed.add(push.json('acked').length);
 
-  const pull = http.get(`${BASE}/v1/pull?cursor=${cursor}&limit=500`, { headers, tags: { name: 'pull' } });
+  const pull = http.get(`${BASE}/v1/pull?cursor=${cursor}&limit=500`, {
+    headers,
+    tags: { name: 'pull' },
+  });
   pullMs.add(pull.timings.duration);
   check(pull, { 'pull 200': (r) => r.status === 200 });
   if (pull.status === 200) {

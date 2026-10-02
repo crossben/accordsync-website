@@ -10,6 +10,10 @@ export default tseslint.config(
     rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
   },
   {
+    files: ['load/k6/**/*.js'],
+    languageOptions: { globals: { __ENV: 'readonly', __VU: 'readonly', __ITER: 'readonly' } },
+  },
+  {
     files: ['packages/core/src/**/*.ts'],
     ignores: ['**/*.test.ts'],
     rules: {

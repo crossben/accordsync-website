@@ -2,12 +2,12 @@
 # platform-specific binaries (glibc vs Alpine's musl), and .next/out are stale outputs.
 # public/brand is NOT excluded (unlike Yoon): it is the committed source of truth until
 # the owner moves the brand files to app/docs/assets/.
-# app/ (a CI workspace checkout of the real repository) is excluded — the image reads
-# the committed snapshot in accord/, which must NOT be excluded.
+# The website's own app/ directory (the Next.js routes) and the committed accord/
+# snapshot MUST both be in the image.
 node_modules
 .next
 out
-app
 .git
 .env*
 *.log
+.snippets-check-*

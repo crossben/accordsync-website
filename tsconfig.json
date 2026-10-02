@@ -29,5 +29,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "out", "scripts", "app", "accord", "content/snippets"]
+  "exclude": ["node_modules", "out", "scripts", "accord", "content/snippets"]
 }

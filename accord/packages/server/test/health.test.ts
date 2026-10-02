@@ -60,7 +60,10 @@ describe('server against real PostgreSQL', () => {
   });
 
   it('refuses request bodies over the size limit', async () => {
-    const app = createApp({ db: h.db, def: { ...def, limits: { ...def.limits, maxBodyBytes: 1024 } } });
+    const app = createApp({
+      db: h.db,
+      def: { ...def, limits: { ...def.limits, maxBodyBytes: 1024 } },
+    });
     const res = await app.request('/v1/push', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Content-Length': '5000' },

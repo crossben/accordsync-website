@@ -9,7 +9,6 @@ const eslintConfig = defineConfig([
     "out/",
     "node_modules/",
     "public/brand/",
-    "app/",
     "accord/",
     "content/snippets/",
   ]),

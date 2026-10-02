@@ -4,7 +4,7 @@ import nextPlugin from "@next/eslint-plugin-next";
 const eslintConfig = defineConfig([
   nextPlugin.configs.recommended,
   nextPlugin.configs["core-web-vitals"],
-  globalIgnores([".next/", "out/", "node_modules/", "public/brand/", "app/"]),
+  globalIgnores([".next/", "out/", "node_modules/", "public/brand/", "app/", "content/snippets/"]),
 ]);
 
 export default eslintConfig;

@@ -1,4 +1,4 @@
-// The shared Content type (website.md §3): every string the site renders lives
+// The shared Content type (website.md section 3): every string the site renders lives
 // in content/en.ts and content/fr.ts, both typed by this interface, so a
 // missing or extra French string fails `npm run typecheck`. No i18n library.
 import type { GuaranteeKey, StrategyId } from "@/content/facts";
@@ -27,6 +27,7 @@ export type Content = {
       guarantees: string;
       code: string;
       proof: string;
+      run: string;
       openSource: string;
     };
     themeToggle: { toDark: string; toLight: string };
@@ -38,7 +39,7 @@ export type Content = {
     subline: string;
     ctaHow: string;
     ctaGithub: string;
-    /** Required status line (website.md §4): shown in the hero and the footer. */
+    /** Required status line (website.md section 4): shown in the hero and the footer. */
     statusLine: string;
     scene: {
       labels: { devices: [string, string, string]; server: string; offline: string };
@@ -115,17 +116,35 @@ export type Content = {
     copied: string;
   };
 
+  /** section 5.9 — rendered only while features.quickstart is true. */
+  quickstart: {
+    heading: string;
+    intro: string;
+    steps: { title: string; body: string; commands: string[] }[];
+    note: string;
+    terminalLabel: string;
+    terminalNote: string;
+  };
+
   proof: {
     heading: string;
     intro: string;
     planned: PlannedBadge;
-    items: { convergenceTest: { title: string; body: string }; strategyLaws: { title: string; body: string }; simulator: { title: string; body: string } };
+    items: {
+      convergenceTest: { title: string; body: string };
+      strategyLaws: { title: string; body: string };
+      simulator: { title: string; body: string };
+    };
   };
 
   not: {
     heading: string;
     intro: string;
-    items: { database: { title: string; body: string }; collab: { title: string; body: string }; business: { title: string; body: string } };
+    items: {
+      database: { title: string; body: string };
+      collab: { title: string; body: string };
+      business: { title: string; body: string };
+    };
   };
 
   openSource: {

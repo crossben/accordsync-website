@@ -1,10 +1,27 @@
-// content/snippets/resolve-conflict.ts — the "Resolve a conflict" tab
-// (website.md §5.6). See schema.ts for the API-preview note.
-import type { Conflict } from "@accordsync/core";
+// Resolve a conflict: status is conflict(), so Accord keeps both values and
+// flags the record. It never guesses on money or legal status — the app decides.
+import {
+  AccordClient,
+  httpTransport,
+  IndexedDbStorage,
+  type ConflictInfo,
+} from "@accordsync/client";
+import { schema } from "./schema";
 
-// status is conflict(): Accord keeps both values and flags the record.
-// It never guesses on money or legal status — the app decides.
-client.onConflict<Conflict<"status">>("dossier:91", "status", (c) => {
-  // c.values holds every concurrent value, with the device and HLC that wrote it.
-  showResolutionDialog(c.values);
+// Your app's own logic: surface both values to a human.
+declare function askTheUser(c: ConflictInfo): Promise<string>;
+
+const accord = await AccordClient.open({
+  schema,
+  storage: new IndexedDbStorage("my-field-app"),
+  transport: httpTransport({
+    url: "https://sync.example.com",
+    getToken: () => localStorage.getItem("token") ?? "",
+  }),
 });
+
+for (const c of accord.conflicts()) {
+  // c.values holds every concurrent value, with the op that wrote it.
+  const choice = await askTheUser(c); // a business decision — a human, really
+  await accord.resolve(c.record, c.field, choice);
+}

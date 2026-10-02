@@ -1,0 +1,21 @@
+name: accord-website
+
+services:
+  app:
+    # Built from this repository plus the Accord repository checked out as a
+    # sibling (../app, like a normal `npm run build`) and ../plan.md mounted
+    # as a build secret for check-facts. Requires Docker 23+ (BuildKit) and
+    # Compose v2.17+.
+    build:
+      context: .
+      additional_contexts:
+        accord: ../app
+      secrets:
+        - accord_plan
+    ports:
+      - "3000"
+    restart: unless-stopped
+
+secrets:
+  accord_plan:
+    file: ../plan.md

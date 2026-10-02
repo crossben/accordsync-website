@@ -1,0 +1,48 @@
+# CI for the website repository (website.md section 9). Checks out the site, checks
+# out crossben/accordsync into app/ (read-only token the owner creates), then
+# runs the full gate. A daily schedule catches facts drifting in app/ even
+# without a website change.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * *" # daily at 06:00 UTC
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      ACCORD_APP_DIR: app
+    steps:
+      - uses: actions/checkout@v4
+
+      # The Accord repository, read-only. ACCORD_APP_READ_TOKEN is a
+      # fine-grained PAT with Contents: read on crossben/accordsync only
+      # (created by the owner, website.md section 9). Once that repository is public,
+      # the `token:` line can be dropped.
+      - uses: actions/checkout@v4
+        with:
+          repository: crossben/accordsync
+          path: app
+          token: ${{ secrets.ACCORD_APP_READ_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: node scripts/check-facts.mjs
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run check:snippets
+      - run: npm run build
+      - run: npm run check:links
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: out/

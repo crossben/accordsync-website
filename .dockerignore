@@ -1,0 +1,13 @@
+# Build context = this repository. Keep host builds out of the image: node_modules carries
+# platform-specific binaries (glibc vs Alpine's musl), and .next/out are stale outputs.
+# public/brand is NOT excluded (unlike Yoon): it is the committed source of truth until
+# the owner moves the brand files to app/docs/assets/.
+# app/ comes in through the extra `accord` build context, never through this one —
+# exclude it here so a CI workspace checkout can't leak in via the main context.
+node_modules
+.next
+out
+app
+.git
+.env*
+*.log

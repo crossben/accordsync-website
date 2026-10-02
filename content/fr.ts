@@ -1,7 +1,7 @@
-// French copy (website.md §3). Written to read naturally, not as a translation:
+// French copy (website.md section 3). Written to read naturally, not as a translation:
 // the jokes are adapted ("trouver un accord", "d'accord"), the technical terms
 // stay in English (conflict(), lww, HLC, op log). The owner reviews this file
-// before launch (website.md §11). Same sections and limits as content/en.ts.
+// before launch (website.md section 11). Same sections and limits as content/en.ts.
 import type { Content } from "@/content/types";
 
 export const fr: Content = {
@@ -24,6 +24,7 @@ export const fr: Content = {
       guarantees: "Garanties",
       code: "Votre code",
       proof: "Preuves",
+      run: "Lancer",
       openSource: "Open source",
     },
     themeToggle: { toDark: "Passer en thème sombre", toLight: "Passer en thème clair" },
@@ -33,14 +34,18 @@ export const fr: Content = {
     kicker: "Chaque appareil, d'accord.",
     headline: "La synchronisation offline-first qui reste correcte quand le réseau ment.",
     subline:
-      "Accord est un moteur de sync open source et auto-hébergé, en développement, pour les applis de terrain. Les données vivent en SQLite ou IndexedDB sur l'appareil, la vérité en PostgreSQL côté serveur, et chaque réplique fusionne selon des règles déclarées — pas à la chance.",
+      "Accord est un moteur de sync open source et auto-hébergé, en développement pour les applis de terrain : les données vivent en SQLite ou IndexedDB, la vérité en PostgreSQL côté serveur, et les répliques fusionnent selon des règles déclarées — pas à la chance.",
     ctaHow: "Fonctionnement",
     ctaGithub: "GitHub",
     statusLine: "En développement : pas encore publié. Suivez le projet sur GitHub.",
     scene: {
-      labels: { devices: ["Appareil A", "Appareil B", "Appareil C"], server: "Serveur", offline: "hors ligne" },
+      labels: {
+        devices: ["Appareil A", "Appareil B", "Appareil C"],
+        server: "Serveur",
+        offline: "hors ligne",
+      },
       description:
-        "Illustration de la façon dont Accord est conçu pour synchroniser : trois appareils écrivent des changements hors ligne pendant que les opérations s'accumulent à côté d'eux, se reconnectent au serveur, échangent des opérations dans un ordre arbitraire et terminent avec un état identique. Dans un cycle, deux appareils modifient le même champ conflict() ; après la synchronisation, chaque appareil affiche les deux valeurs marquées comme conflictuelles, l'une n'écrase jamais l'autre en silence. C'est une illustration, pas une vue en direct.",
+        "Illustration du design de la sync : trois appareils écrivent hors ligne pendant que les opérations s'accumulent, se reconnectent, échangent des opérations et terminent avec un état identique. Deux appareils modifient le même champ conflict() ; ensuite chaque appareil affiche les deux valeurs, marquées conflictuelles — jamais l'une qui écrase l'autre en silence. Une illustration, pas une vue en direct.",
       pause: "Mettre l'animation en pause",
       play: "Reprendre l'animation",
       caption: "Illustration. Pas une vue en direct.",
@@ -52,15 +57,15 @@ export const fr: Content = {
     cards: [
       {
         title: "« Reconnectez-vous » n'est pas une réponse",
-        body: "Les applis de terrain vivent là où le réseau tombe des minutes ou des jours : agents d'enrôlement, collecteurs de déchets, boutiquiers. Une appli qui bloque sur une boîte de dialogue bloque le travail aussi longtemps que l'antenne est en panne.",
+        body: "Les applis de terrain vivent là où le réseau tombe des minutes ou des jours : agents d'enrôlement, collecteurs de déchets, boutiquiers. Une appli bloquée sur une boîte de dialogue bloque le travail.",
       },
       {
         title: "Last write wins, c'est un pile ou face",
-        body: "La solution habituelle — garder la dernière écriture, jeter le reste — perd en silence le travail d'un agent. Personne ne s'en aperçoit jusqu'à ce que les chiffres ne tombent plus juste. Last write wins, ce n'est pas un accord : c'est un pile ou face.",
+        body: "La solution habituelle — garder la dernière écriture, jeter le reste — perd en silence le travail d'un agent. Last write wins, ce n'est pas un accord : c'est un pile ou face.",
       },
       {
         title: "Certains champs méritent une réunion",
-        body: "Deux agents modifient le même dossier hors ligne. Un moteur qui choisit un gagnant vient de choisir à votre place. Sur l'argent et le statut légal, les deux valeurs doivent s'afficher, et l'appli — un humain, en vrai — tranche.",
+        body: "Deux agents modifient le même dossier hors ligne. Un moteur qui choisit un gagnant a choisi à votre place. Sur l'argent et le statut légal, les deux valeurs s'affichent, et l'appli tranche.",
       },
     ],
   },
@@ -68,32 +73,32 @@ export const fr: Content = {
   how: {
     heading: "Fonctionnement",
     intro:
-      "C'est le design de la v1, écrit à l'intention — c'est ce à quoi l'implémentation en cours devra tenir. Les étapes décrivent le chemin d'une écriture, d'un appareil vers tous les autres.",
+      "Le design de la v1, écrit à l'intention. Ces étapes suivent une écriture, d'un appareil vers tous les autres.",
     planned: { label: "À venir", title: "À venir — décrit comme conçu, pas encore construit" },
     steps: [
       {
         title: "Écrire en local, toujours",
-        body: "Chaque action utilisateur atterrit d'abord en SQLite ou IndexedDB local. Le réseau n'est jamais sur le chemin critique d'une action.",
+        body: "Chaque action atterrit d'abord en SQLite ou IndexedDB local. Le réseau n'est jamais sur le chemin critique d'une action.",
       },
       {
         title: "Enregistrer des opérations, pas des écrasements",
-        body: "Une écriture devient une opération dans un journal en ajout seul — op id, champ, valeur, horloge hybride. Rejouer une opération deux fois ne change rien.",
+        body: "Une écriture devient une opération dans un journal en ajout seul — op id, champ, valeur, horloge hybride. Rejouée deux fois, une opération ne change rien.",
       },
       {
         title: "Passer hors ligne",
-        body: "Rien de spécial. L'appareil continue de fonctionner et collecte les opérations pendant que la liaison est coupée.",
+        body: "Rien de spécial. L'appareil continue de fonctionner et collecte les opérations pendant la coupure.",
       },
       {
         title: "Se reconnecter et synchroniser dans les deux sens",
-        body: "Les opérations partent par lots idempotents et arrivent par pages reprises là où elles se sont arrêtées. Un appareil hors ligne trois jours reprend où il s'est arrêté, pas depuis zéro.",
+        body: "Les opérations partent par lots idempotents et arrivent par pages reprises — un appareil hors ligne trois jours reprend où il s'est arrêté.",
       },
       {
         title: "Fusionner selon des règles déclarées",
-        body: "Chaque champ déclare sa stratégie. Le serveur applique les sync scopes, et une opération hors périmètre est renvoyée au client comme refusée — jamais jetée en silence.",
+        body: "Chaque champ déclare sa stratégie. Le serveur applique les sync scopes et signale les refus au client — jamais jetés en silence.",
       },
       {
         title: "Converger",
-        body: "Chaque réplique fusionne vers le même état. Un champ conflict() affiche toujours les deux valeurs jusqu'à ce que l'appli tranche.",
+        body: "Chaque réplique fusionne vers le même état, et un champ conflict() affiche les deux valeurs jusqu'à ce que l'appli tranche.",
       },
     ],
     timeline: {
@@ -112,8 +117,8 @@ export const fr: Content = {
       counterRow: "visites — counter()",
       conflictRow: "status — conflict()",
       finalCounter: "3 + 2 = 5",
-      finalConflictA: "« approuvé »",
-      finalConflictB: "« rejeté »",
+      finalConflictA: "approuvé",
+      finalConflictB: "rejeté",
       keptBoth: "les deux valeurs gardées",
       converged: "d'accord — état identique sur chaque réplique",
     },
@@ -122,10 +127,12 @@ export const fr: Content = {
   merges: {
     heading: "Règles de fusion",
     intro:
-      "Chaque champ déclare sa stratégie dans le schéma, et la stratégie décide qui gagne. Voici l'ensemble prévu pour la v1. conflict() : certains désaccords méritent une réunion.",
-    planned: { label: "À venir", title: "À venir — les stratégies sont conçues, pas encore construites" },
-    note:
-      "Les listes ordonnées (un CRDT de séquence) sont prévues après la v1, pas dedans — la plupart des listes d'applis de terrain sont en réalité des ensembles. Ce tableau sera généré depuis docs/merge-rules.md dans le dépôt quand cette doc existera.",
+      "Chaque champ déclare sa stratégie dans le schéma, et la stratégie décide qui gagne. conflict() : certains désaccords méritent une réunion.",
+    planned: {
+      label: "À venir",
+      title: "À venir — les stratégies sont conçues, pas encore construites",
+    },
+    note: "Les listes ordonnées (un CRDT de séquence) sont prévues après la v1 — la plupart des listes d'applis de terrain sont des ensembles. Ce tableau sera généré depuis docs/merge-rules.md quand elle existera.",
     table: {
       columns: { strategy: "Stratégie", useFor: "Pour quoi", rule: "Règle", example: "Exemple" },
       rows: {
@@ -137,9 +144,9 @@ export const fr: Content = {
         },
         counter: {
           useFor: "Quantités collectées, ajustements de stock",
-          rule: "Somme des incréments — aucun incrément n'est perdu, quel que soit l'ordre d'arrivée.",
+          rule: "Somme des incréments — aucun perdu, quel que soit l'ordre.",
           before: "A : +3 · B : +2",
-          after: "5 — sur chaque réplique",
+          after: "5, partout",
         },
         set: {
           useFor: "Étiquettes, agents assignés",
@@ -149,7 +156,7 @@ export const fr: Content = {
         },
         conflict: {
           useFor: "Champs critiques : statut, approbation, montant",
-          rule: "Jamais résolu automatiquement. Les deux valeurs sont gardées, l'enregistrement est marqué conflictuel, et l'appli décide.",
+          rule: "Jamais résolu automatiquement : les deux valeurs gardées, l'enregistrement marqué, l'appli décide.",
           before: "A : « approuvé » · B : « rejeté »",
           after: "« approuvé » | « rejeté » — marqué",
         },
@@ -160,19 +167,19 @@ export const fr: Content = {
   guarantees: {
     heading: "Ce qu'Accord garantit",
     intro:
-      "Cette section ne porte que des garanties prouvées — un test qui passe dans le dépôt. Rien n'y est encore arrivé, donc chaque point ci-dessous est à venir. Chacun reliera son test ou son ADR le jour où il deviendra vrai.",
+      "Seules des garanties prouvées ont leur place ici — un test qui passe dans le dépôt. Rien n'y est encore arrivé : chaque point est à venir, et reliera son test le jour où il deviendra vrai.",
     planned: { label: "À venir", title: "À venir — en attente d'un test qui passe dans le dépôt" },
-    whyLabel: "Pourquoi c'est important :",
-    sourceLink: { label: "crossben/accordsync — le plan, §6" },
+    whyLabel: "Pourquoi :",
+    sourceLink: { label: "crossben/accordsync — le plan (section 6)" },
     items: {
       convergence: {
         title: "Chaque réplique converge",
-        body: "Après la sync, toutes les répliques portent un état identique — conçu pour être prouvé par des tests propriétés qui injectent des pannes réseau aléatoires.",
-        why: "Les jours hors ligne sont le cas normal, pas l'exception, et la divergence est silencieuse.",
+        body: "Après la sync, toutes les répliques sont conçues pour porter un état identique — à prouver par des tests propriétés sous pannes aléatoires.",
+        why: "Les jours hors ligne sont normaux ; la divergence, silencieuse.",
       },
       counters: {
         title: "Les compteurs ne perdent jamais d'incrément",
-        body: "Un champ compteur est conçu pour égaler la somme de tous les incréments jamais faits, quel que soit l'ordre d'arrivée.",
+        body: "Un compteur est conçu pour égaler la somme de tous les incréments jamais faits, quel que soit l'ordre d'arrivée.",
         why: "Les quantités collectées et les stocks doivent tomber juste.",
       },
       conflicts: {
@@ -192,8 +199,8 @@ export const fr: Content = {
       },
       scopes: {
         title: "Les périmètres sont appliqués côté serveur",
-        body: "Le serveur est conçu pour filtrer chaque pull et rejeter chaque opération hors du sync scope de l'utilisateur, en signalant les refus au client.",
-        why: "Un client qui diverge en silence est un bug de données qui attend d'arriver.",
+        body: "Le serveur est conçu pour filtrer chaque pull et rejeter chaque opération hors périmètre, en signalant les refus au client.",
+        why: "Un client qui diverge en silence est un bug de données qui attend.",
       },
     },
   },
@@ -201,30 +208,60 @@ export const fr: Content = {
   code: {
     heading: "Votre code",
     intro:
-      "Trois moments d'une journée d'appli de terrain, esquissés avec l'API prévue. Définir un schéma avec une stratégie de fusion par champ, écrire hors ligne, puis trancher les conflits qu'Accord refuse de deviner.",
+      "Trois moments d'une journée d'appli de terrain avec la vraie API du client : définir un schéma, écrire hors ligne, trancher les conflits qu'Accord refuse de deviner. Les extraits sont vérifiés par le compilateur contre les paquets du dépôt à chaque build.",
     previewLabel: "Aperçu de l'API : peut changer avant la v0.1",
-    tabLabels: { schema: "Définir un schéma", offline: "Écrire hors ligne", conflict: "Trancher un conflit" },
+    tabLabels: {
+      schema: "Définir un schéma",
+      offline: "Écrire hors ligne",
+      conflict: "Trancher un conflit",
+    },
     copy: "Copier",
     copied: "Copié",
+  },
+
+  quickstart: {
+    heading: "Lancez-le vous-même",
+    intro:
+      "Le squelette tourne : un serveur, PostgreSQL, un contrôle de santé. Le quick start du dépôt — un aperçu développeur, pas une version publiée.",
+    steps: [
+      {
+        title: "Cloner le dépôt",
+        body: "Il est privé pour l'instant.",
+        commands: ["git clone https://github.com/crossben/accordsync", "cd accordsync"],
+      },
+      {
+        title: "Démarrer PostgreSQL et le serveur",
+        body: "Docker Compose construit l'image et lance les deux.",
+        commands: ["docker compose up --build"],
+      },
+      {
+        title: "Vérifier la santé",
+        body: "Le serveur répond avec la version du protocole qu'il parle.",
+        commands: ["curl localhost:8080/health"],
+      },
+    ],
+    note: "Node 22.12+ et pnpm 11 pour développer sur Accord ; les tests du serveur démarrent PostgreSQL 16 avec Testcontainers.",
+    terminalLabel: "Terminal",
+    terminalNote: "Commandes réelles et vraie réponse de santé — tirées du test du endpoint.",
   },
 
   proof: {
     heading: "Preuves",
     intro:
-      "Ici, la correction est une suite de tests, pas une promesse. Voici les preuves en construction, d'après le chapitre du plan consacré à prouver la correction. Les vrais chiffres arriveront quand la CI les produira.",
+      "La correction est une suite de tests, pas une promesse. Ces preuves sont en construction, d'après le plan (section 6) ; les vrais chiffres arriveront avec la CI.",
     planned: { label: "À venir", title: "À venir — les suites de tests sont en construction" },
     items: {
       convergenceTest: {
         title: "Tests propriétés de convergence",
-        body: "Des exécutions générées d'appareils qui passent hors ligne, écrivent et se reconnectent, avec des pannes réseau aléatoires. Après chaque livraison, chaque réplique doit porter un état identique — et les échecs sont réduits à un exemple minimal.",
+        body: "Des exécutions générées d'appareils qui passent hors ligne, écrivent et se reconnectent, avec des pannes aléatoires. Chaque réplique doit finir identique ; les échecs sont réduits à un exemple minimal.",
       },
       strategyLaws: {
         title: "Lois des stratégies",
-        body: "Chaque stratégie de fusion est testée pour commutativité, associativité et idempotence, pour que les implémentations ne puissent jamais être en désaccord — ports futurs compris.",
+        body: "Chaque stratégie est testée pour commutativité, associativité et idempotence : les implémentations ne peuvent jamais diverger, ports futurs compris.",
       },
       simulator: {
         title: "Simulateur à graine",
-        body: "Un simulateur réseau déterministe : coupure, délai, duplication, réordonnancement, partition. Un échec en CI se rejoue en local avec la même graine.",
+        body: "Un simulateur réseau déterministe — coupure, délai, duplication, réordonnancement, partition. Un échec en CI se rejoue avec la même graine.",
       },
     },
   },
@@ -235,7 +272,7 @@ export const fr: Content = {
     items: {
       database: {
         title: "Pas une base de données",
-        body: "Accord synchronise les enregistrements définis par le schéma de votre appli. Ce n'est pas un moteur de requêtes général, et il ne remplace ni PostgreSQL ni SQLite — il déplace les changements entre eux.",
+        body: "Accord synchronise les enregistrements définis par le schéma de votre appli. Ce n'est pas un moteur de requêtes et ne remplace ni PostgreSQL ni SQLite — il déplace les changements entre eux.",
       },
       collab: {
         title: "Pas de collaboration temps réel sur le texte",
@@ -243,7 +280,7 @@ export const fr: Content = {
       },
       business: {
         title: "Pas de magie pour les conflits métier",
-        body: "Deux agents qui approuvent le même dossier différemment, c'est une décision métier. Accord l'expose comme un conflit à trancher par votre appli, au lieu de deviner.",
+        body: "Deux agents qui approuvent le même dossier différemment, c'est une décision métier. Accord l'expose à trancher par votre appli, au lieu de deviner.",
       },
     },
   },
@@ -252,19 +289,19 @@ export const fr: Content = {
     heading: "Open source",
     licence: {
       title: "Licence",
-      body: "Apache-2.0 est la licence prévue pour Accord — courte, permissive, et sans surprise pour les services juridiques. Le code de ce site est déjà Apache-2.0.",
+      body: "Le code d'Accord est Apache-2.0 — courte, permissive, sans surprise pour les services juridiques. Celui de ce site est Apache-2.0 aussi.",
     },
     contribute: {
       title: "Contribuer",
-      body: "Les dépôts restent privés pendant les premiers jalons. Quand ils s'ouvrent, issues et pull requests seront bienvenues, et CONTRIBUTING.md sera relié ici.",
+      body: "Les dépôts restent privés pendant les premiers jalons. À l'ouverture, issues et pull requests seront bienvenues ; CONTRIBUTING.md sera relié ici.",
     },
     security: {
       title: "Sécurité",
-      body: "Les signalements de sécurité auront un canal privé — SECURITY.md dans le dépôt expliquera comment, quand il existera.",
+      body: "Les signalements auront un canal privé — SECURITY.md dans le dépôt expliquera comment.",
     },
     roadmap: {
       title: "Feuille de route",
-      body: "Après la v1 : un client Dart/Flutter, des listes ordonnées avec leurs propres preuves, des pièces jointes à téléversement reprenable. Une petite v1 prouvablement correcte vaut mieux qu'une grande qui fonctionne à peu près.",
+      body: "Après la v1 : un client Dart/Flutter, des listes ordonnées avec leurs preuves, des pièces jointes reprises au téléversement. Une petite v1 prouvablement correcte vaut mieux qu'une grande qui fonctionne à peu près.",
     },
   },
 

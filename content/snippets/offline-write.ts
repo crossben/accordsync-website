@@ -1,17 +1,20 @@
-// content/snippets/offline-write.ts — the "Write offline" tab (website.md §5.6).
-// See schema.ts for the API-preview note.
-import { createClient, indexedDbAdapter } from "@accordsync/client";
+// Write offline: the network is never on the critical path of a user action.
+// Writes apply at once on the device, and sync runs in the background.
+import { AccordClient, httpTransport, IndexedDbStorage } from "@accordsync/client";
+import { schema } from "./schema";
 
-const client = createClient({
-  storage: indexedDbAdapter(),
-  server: "https://sync.example.org",
+const accord = await AccordClient.open({
+  schema,
+  storage: new IndexedDbStorage("my-field-app"),
+  transport: httpTransport({
+    url: "https://sync.example.com",
+    getToken: () => localStorage.getItem("token") ?? "",
+  }),
 });
+accord.start(); // background sync: after writes, every 30 s, backoff when offline
 
-// The network is never on the critical path of a user action: the write lands
-// in local storage first and becomes an op in the append-only log.
-const dossier = client.edit("dossier:91");
-dossier.visits.increment(1);
-dossier.client_name.set("Awa Ndiaye");
-
-// Sync runs in the background: push in idempotent batches, pull in resumable
-// pages. Going offline changes nothing here.
+// Each write resolves once it is saved on the device, and read() sees it immediately.
+await accord.assign("dossier:91", "client_name", "Aminata Fall");
+await accord.inc("dossier:91", "visits", 1);
+await accord.add("dossier:91", "documents", "cni.pdf");
+accord.read("dossier:91");

@@ -1,0 +1,33 @@
+# Local development: PostgreSQL plus the Accord server.
+#   docker compose up --build
+#   curl localhost:8080/health
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: accord
+      POSTGRES_PASSWORD: accord
+      POSTGRES_DB: accord
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U accord']
+      interval: 5s
+      retries: 10
+
+  server:
+    build: .
+    environment:
+      ACCORD_DATABASE_URL: postgres://accord:accord@postgres:5432/accord
+      # Development only: tokens signed with this shared secret. Use ACCORD_JWKS_URL in production.
+      ACCORD_DEV_SECRET: dev-secret-change-me-at-least-32-bytes
+    volumes:
+      - ./examples/server:/app/config:ro
+    ports:
+      - '8080:8080'
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:

@@ -10,17 +10,18 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 
 const websiteRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const appDir = process.env.ACCORD_APP_DIR
-  ? resolve(process.env.ACCORD_APP_DIR)
-  : resolve(websiteRoot, "../app");
+// Reads the committed snapshot (accord/), refreshed by `npm run sync:app` —
+// not a sibling checkout, so CI and Docker build from this repository alone.
+const appDir = resolve(websiteRoot, "accord");
 
 const corePkg = join(appDir, "packages", "core", "package.json");
 const clientPkg = join(appDir, "packages", "client", "package.json");
 
 if (!existsSync(corePkg) || !existsSync(clientPkg)) {
   console.log(
-    "[check:snippets] Skipped: app/packages/core and app/packages/client do not exist yet.\n" +
-      "[check:snippets] The site must keep the \u201CAPI preview: may change before v0.1\u201D label.",
+    "[check:snippets] Skipped: accord/packages/core and accord/packages/client are not in the\n" +
+      "[check:snippets] snapshot yet — run `npm run sync:app`. The site must keep the\n" +
+      "[check:snippets] \u201CAPI preview: may change before v0.1\u201D label.",
   );
   process.exit(0);
 }

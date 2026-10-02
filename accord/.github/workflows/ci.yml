@@ -1,0 +1,44 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+      # Server tests start PostgreSQL 16 through Testcontainers (Docker is available on the runner).
+      - run: pnpm test
+        env:
+          # Thousands of generated cases per CI run; failures print a seed to replay locally.
+          ACCORD_PROPERTY_RUNS: '2000'
+          ACCORD_SIM_RUNS: '3000'
+
+  image:
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build server image
+        run: docker build -t accordsync/server:ci .
+      - name: Smoke test with PostgreSQL
+        run: |
+          docker compose up -d --build --wait
+          curl -fsS http://localhost:8080/health
+          docker compose down -v

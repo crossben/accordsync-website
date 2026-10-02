@@ -1,0 +1,165 @@
+:root {
+  --bg: #f3f5f1;
+  --surface: #fff;
+  --ink: #16202a;
+  --muted: #56616b;
+  --accent: #1d6b57;
+  --conflict: #9a4a12;
+  --line: #dce2dc;
+  font-family: system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f161c;
+    --surface: #18222b;
+    --ink: #e8ede9;
+    --muted: #9aa7b0;
+    --accent: #4fc59e;
+    --conflict: #f0a160;
+    --line: #26313a;
+  }
+}
+body {
+  margin: 0;
+}
+.app {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px;
+}
+header {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+header nav a {
+  margin-left: 8px;
+  color: var(--accent);
+}
+.sync {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+main {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+@media (max-width: 700px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+}
+aside ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+aside li button {
+  width: 100%;
+  text-align: left;
+}
+section {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+section.empty {
+  display: block;
+}
+h2 {
+  margin: 0;
+}
+label {
+  display: grid;
+  gap: 4px;
+}
+input {
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--ink);
+}
+button {
+  font: inherit;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+button.selected {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+}
+button.on {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+button.off {
+  color: var(--conflict);
+  border-color: var(--conflict);
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.muted {
+  color: var(--muted);
+}
+.flag {
+  color: var(--conflict);
+  margin-left: 6px;
+}
+.docs {
+  padding-left: 18px;
+}
+.conflict {
+  border: 2px solid var(--conflict);
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+.conflict p {
+  margin: 0;
+  color: var(--conflict);
+}
+.toasts {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  display: grid;
+  gap: 8px;
+  max-width: 360px;
+}
+.toast {
+  background: var(--surface);
+  border: 2px solid var(--conflict);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.loading,
+.fatal {
+  padding: 32px;
+}

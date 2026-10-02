@@ -8,18 +8,18 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const websiteRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const appDir = process.env.ACCORD_APP_DIR
-  ? resolve(process.env.ACCORD_APP_DIR)
-  : resolve(websiteRoot, "../app");
+// Reads the committed snapshot (accord/), refreshed by `npm run sync:app`.
+const appDir = resolve(websiteRoot, "accord");
 
 const ASSETS = ["logo.svg", "logo-dark.svg", "mark.svg", "icon.svg", "social-preview.png"];
 const sourceDir = join(appDir, "docs", "assets");
 
 if (!existsSync(join(sourceDir, "logo.svg"))) {
   console.log(
-    "[brand] app/docs/assets/ does not hold the brand files yet — using the proposed\n" +
-      "[brand] assets in website/public/brand/ as-is. After the owner approves them and\n" +
-      "[brand] moves them to app/docs/assets/ (see README), this script copies them here.",
+    "[brand] accord/docs/assets/ (the snapshot) does not hold the brand files yet —\n" +
+      "[brand] using the proposed assets in website/public/brand/ as-is. After the owner\n" +
+      "[brand] approves them and moves them to app/docs/assets/ (see README), run\n" +
+      "[brand] `npm run sync:app` and this script copies them from the snapshot.",
   );
   process.exit(0);
 }

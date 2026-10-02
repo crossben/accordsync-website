@@ -4,10 +4,11 @@
   "private": true,
   "description": "The one-page site for Accord, the offline-first sync engine (github.com/crossben/accordsync)",
   "scripts": {
-    "predev": "npm run --silent brand && node scripts/check-facts.mjs",
+    "predev": "npm run --silent brand && node scripts/sync-app.mjs && node scripts/check-facts.mjs",
     "dev": "next dev",
     "brand": "node scripts/copy-brand.mjs",
-    "prebuild": "npm run --silent brand && node scripts/check-facts.mjs",
+    "sync:app": "node scripts/sync-app.mjs",
+    "prebuild": "npm run --silent brand && node scripts/sync-app.mjs && node scripts/check-facts.mjs",
     "build": "next build",
     "start": "npx serve@latest out",
     "lint": "eslint .",

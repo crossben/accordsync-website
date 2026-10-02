@@ -1,26 +1,25 @@
 // Fact-drift guard (website.md section 4). Every factual claim on the site must still
-// be backed by its source: ../plan.md, or a file in the Accord repository
-// ($ACCORD_APP_DIR, default ../app — read, never modified). For each fact we
-// assert that key strings still appear in the source. When a source changes and
-// a claim no longer holds, this fails the build until website/content/facts.ts
-// and the copy that cites it are updated. That is intended.
+// be backed by its source: plan.md, or a file in the Accord repository. Sources are
+// read from the committed snapshot in accord/ (refreshed with `npm run sync:app`),
+// so the site builds from this repository alone; CI's drift job fails when the
+// snapshot falls behind crossben/accordsync. For each fact we assert that key
+// strings still appear in the source. When a source changes and a claim no longer
+// holds, this fails the build until website/content/facts.ts and the copy that
+// cites it are updated. That is intended.
 //
 // Also enforces website.md section 0's banned list on the copy itself, and guards the
-// version fact: the moment app/CHANGELOG.md gains a v0.1.0 heading, the "in
+// version fact: the moment CHANGELOG.md gains a v0.1.0 heading, the "in
 // development" status line must be updated.
 //
-// Run in predev and prebuild; CI runs it daily so drift in app/ is caught.
+// Run in predev and prebuild; CI runs a drift job daily so drift in the Accord
+// repository is caught even without a website change.
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const websiteRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const appDir = process.env.ACCORD_APP_DIR
-  ? resolve(process.env.ACCORD_APP_DIR)
-  : resolve(websiteRoot, "../app");
-const planFile = process.env.ACCORD_PLAN_FILE
-  ? resolve(process.env.ACCORD_PLAN_FILE)
-  : resolve(websiteRoot, "../plan.md");
+const appDir = resolve(websiteRoot, "accord"); // the committed snapshot
+const planFile = join(appDir, "plan.md");
 
 const fail = (message) => {
   console.error(`\n[check-facts] ${message}\n`);
@@ -33,14 +32,16 @@ const normalize = (text) => text.replace(/\s+/g, " ");
 
 if (!existsSync(appDir)) {
   fail(
-    `The Accord repository directory does not exist: ${appDir}\n` +
-      `  Clone crossben/accordsync there (or set ACCORD_APP_DIR). CI checks it out into website/app/.`,
+    `The committed Accord snapshot does not exist: ${appDir}\n` +
+      `  Run \`npm run sync:app\` from a checkout that has the Accord repository at\n` +
+      `  ../app (or set ACCORD_APP_DIR), then commit accord/.`,
   );
 }
 if (!existsSync(planFile)) {
   fail(
-    `plan.md does not exist: ${planFile}\n` +
-      `  The facts sheet cites it as the source for most claims (website.md section 4).`,
+    `plan.md is missing from the snapshot: ${planFile}\n` +
+      `  The facts sheet cites it as the source for most claims (website.md section 4).\n` +
+      `  Re-run \`npm run sync:app\` with ACCORD_PLAN_FILE pointing at plan.md, then commit it.`,
   );
 }
 

@@ -1,0 +1,52 @@
+{
+  "name": "@accordsync/server",
+  "version": "0.0.0",
+  "description": "Accord sync server (Node, Hono, PostgreSQL)",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crossben/accordsync.git",
+    "directory": "packages/server"
+  },
+  "exports": {
+    ".": {
+      "@accordsync/source": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsdown src/index.ts src/main.ts --format esm --dts --clean --platform node --target node22",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests",
+    "start": "node dist/main.mjs",
+    "dev": "tsx watch --conditions=@accordsync/source src/main.ts serve",
+    "protocol:emit": "tsx --conditions=@accordsync/source scripts/emit-protocol.ts"
+  },
+  "dependencies": {
+    "@accordsync/core": "workspace:*",
+    "@hono/node-server": "^2.1.3",
+    "@sinclair/typebox": "^0.34.52",
+    "hono": "^4.13.12",
+    "jose": "^6.2.12",
+    "kysely": "^0.29.6",
+    "pg": "^8.23.1",
+    "prom-client": "^15.1.3"
+  },
+  "devDependencies": {
+    "@testcontainers/postgresql": "^12.2.0",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15"
+  },
+  "bin": {
+    "accord": "./dist/main.mjs"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

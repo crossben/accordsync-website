@@ -1,0 +1,31 @@
+{
+  "name": "@accordsync/simulator",
+  "version": "0.0.0",
+  "description": "Deterministic network and device simulator for Accord convergence tests",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crossben/accordsync.git",
+    "directory": "packages/simulator"
+  },
+  "exports": {
+    ".": {
+      "@accordsync/source": "./src/index.ts",
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsdown src/index.ts --format esm --dts --clean --platform node --target node22",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@accordsync/core": "workspace:*"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@accordsync/example-field-app",
+  "private": true,
+  "description": "Two field agents, one dossier, no network: the Accord demo",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json && vite build",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "echo 'field-app: covered by typecheck and build'"
+  },
+  "dependencies": {
+    "@accordsync/client": "workspace:*",
+    "@accordsync/core": "workspace:*",
+    "jose": "^6.2.12",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "vite": "^8.3.2"
+  }
+}

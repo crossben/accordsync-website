@@ -1,0 +1,10 @@
+packages:
+  - packages/*
+  - examples/field-app
+
+# Only esbuild (used by tsup/vitest) may run install scripts; the rest are optional native addons.
+allowBuilds:
+  esbuild: true
+  cpu-features: false
+  protobufjs: false
+  ssh2: false

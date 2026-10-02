@@ -15,26 +15,33 @@ backed by code and a passing test in `app/` and may use the present tense.
 
 ## Develop
 
-Requires Node ≥ 22 (`.nvmrc` pins 24) and the Accord repository checked out as
-a sibling at `../app` (CI checks it out into `app/` and sets `ACCORD_APP_DIR`).
+Requires Node ≥ 22 (`.nvmrc` pins 24). The Accord sources the site reads —
+plan.md, README, CHANGELOG, LICENSE, ADRs, the core/client package sources —
+live in the **committed snapshot `accord/`**, so the site builds and deploys
+from this repository alone (the deploy host has no sibling checkout). Refresh
+the snapshot when the Accord repository moves:
 
 ```sh
 npm ci
-npm run dev        # predev runs copy-brand + check-facts
-npm run build      # prebuild + static export into out/
+npm run dev            # predev: brand + sync-app (skips without ../app) + check-facts
+npm run build          # prebuild + static export into out/
+npm run sync:app       # refresh accord/ from ../app (ACCORD_APP_DIR to override)
 npm run lint | typecheck | format
 npm run check:links      # every link in out/ resolves; no third-party domains
-npm run check:snippets   # type-checks content/snippets against app/ packages
+npm run check:snippets   # type-checks content/snippets against accord/packages/*
 ```
 
-`npm run build` works from a clean clone with only `npm ci` **plus `app/`
-checked out** (website.md section 10) — `check-facts` fails clearly without it.
+`npm run build` works from a clean clone with only `npm ci` (website.md
+section 10). With the Accord repository checked out at `../app`, prebuild also
+refreshes the snapshot automatically; check-facts always reads the snapshot,
+never a live checkout, and CI's `drift` job fails when `accord/` has fallen
+behind `crossben/accordsync`.
 
 ## What is on the page, and what is hidden
 
 Sections that wait for `app/` to catch up are controlled only by
 [`content/features.ts`](content/features.ts) — turning one on is a one-line PR.
-Current state (2026-10-02, `app/` at M0 + core/simulator stubs):
+Current state (2026-10-02: M1 merge core, M2 simulator + convergence suite, M3 server and M4 client have landed in `app/`; the merge-rules doc exists, so `mergeRulesFromAppDocs` can flip next; the playground is unblocked but its component is not built yet):
 
 | Flag                                   | State  | Unlocks when                                                                                                                                                              |
 | -------------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -181,12 +188,18 @@ analytics. When the owner picks the final domain, update it in
 
 ## CI
 
-`.github/workflows/ci.yml`: checks out this repo, checks out
-`crossben/accordsync` into `app/` with a read-only fine-grained PAT stored in
-the secret `ACCORD_APP_READ_TOKEN` (Contents: read on that repo only — the
-owner creates it), then runs check-facts, lint, typecheck, check:snippets,
-build, check:links, and uploads `out/`. A daily schedule re-runs it so facts
-drifting in `app/` are caught without a website change.
+`.github/workflows/ci.yml` has two jobs:
+
+- **build** — checks out this repo only (no token, no sibling checkout: the
+  build reads the committed `accord/` snapshot) and runs check-facts, lint,
+  typecheck, check:snippets, build, check:links, then uploads `out/`.
+- **drift** — on pushes to main and on a daily schedule, checks out
+  `crossben/accordsync` into `app/` with a read-only fine-grained PAT stored
+  in the secret `ACCORD_APP_READ_TOKEN` (Contents: read on that repo only —
+  the owner creates it), re-runs `sync:app --require`, and fails when the
+  committed `accord/` differs from the repository. When it fires: run
+  `npm run sync:app`, update facts/copy if check-facts asks, and commit the
+  refreshed snapshot.
 
 ## Deployment (owner decision pending, section 11)
 
@@ -194,15 +207,12 @@ No deploy step is implemented. Options, per website.md section 9:
 
 - **Docker** (same setup as the Yoon website): `docker compose up --build -d`
   builds the site in a multi-stage image and serves `out/` with Caddy on
-  container port 3000 (HTTPS terminated in front of it). The build needs the
-  same inputs as a normal build — the Accord repository checked out as a
-  sibling `../app` (passed as an extra build context, without its
-  node_modules) and `../plan.md` (mounted as a build secret for check-facts) —
-  so the facts guard runs inside the image build too. Requires Docker 23+ with
-  BuildKit and Compose v2.17+.
+  container port 3000 (HTTPS terminated in front of it). The image builds from
+  this repository alone — the committed `accord/` snapshot carries the Accord
+  sources — so any host that clones this repo can build it, and the facts
+  guard still runs inside the image build.
 - **Cloudflare Pages** — connect the repo, build command `npm run build`, output
-  `out`. The build needs `app/` present, so either build from the CI artifact
-  or add a clone step with the read token.
+  `out`. No extra setup: the snapshot is committed.
 - **Any static web server** — upload `out/`; it is plain HTML/CSS/JS.
 
 **Do not deploy before the repositories are public**: GitHub links on the site

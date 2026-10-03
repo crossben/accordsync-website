@@ -51,6 +51,17 @@ export async function syncRound(devices: SimDevice[], server: SimServer): Promis
   }
 }
 
+/** A `conflict()` field holding several values, as `replica.read` returns it. */
+type Conflicted = { conflicted: { value: unknown; opId: string }[] };
+function isConflicted(value: unknown): value is Conflicted {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    Array.isArray((value as { conflicted?: unknown }).conflicted)
+  );
+}
+
 export function outcome(devices: SimDevice[]): { identical: boolean; conflicts: { field: string; values: string[] }[] } {
   const snaps = devices.map((d) => d.writer.replica.snapshot());
   const identical = snaps.every((s) => s === snaps[0]);
@@ -59,7 +70,7 @@ export function outcome(devices: SimDevice[]): { identical: boolean; conflicts: 
     const read = d.writer.replica.read(RECORD);
     if (!read) continue;
     for (const [field, value] of Object.entries(read)) {
-      if (value && typeof value === "object" && "conflicted" in value) {
+      if (isConflicted(value)) {
         const existing = conflicts.find((c) => c.field === field);
         const vals = value.conflicted.map((v) => String(v.value));
         if (existing) existing.values = [...new Set([...existing.values, ...vals])];
@@ -108,7 +119,7 @@ export function fieldRead(d: SimDevice, field: string): unknown {
 export function fieldLabel(field: string, value: unknown): string {
   if (field === "visits") return String(value ?? 0);
   if (field === "documents") return Array.isArray(value) ? value.join(", ") : "";
-  if (value && typeof value === "object" && "conflicted" in value) {
+  if (isConflicted(value)) {
     return value.conflicted.map((v) => String(v.value)).join(" | ");
   }
   return String(value ?? "");

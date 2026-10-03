@@ -37,7 +37,7 @@ export const fr: Content = {
       "Accord est un moteur de sync open source et auto-hébergé pour les applis de terrain : les données vivent en SQLite ou IndexedDB, la vérité en PostgreSQL côté serveur, et les répliques fusionnent selon des règles déclarées — pas à la chance.",
     ctaHow: "Fonctionnement",
     ctaGithub: "GitHub",
-    statusLine: "v{version} — première version, {date}. Avant la 1.0 : l'API peut encore changer.",
+    statusLine: "v{version}, publiée le {date}. Avant la 1.0 : l'API peut encore changer.",
     scene: {
       labels: {
         devices: ["Appareil A", "Appareil B", "Appareil C"],
@@ -331,7 +331,7 @@ export const fr: Content = {
 
   footer: {
     tagline: "Conçu pour les réseaux qui mentent.",
-    statusLine: "v{version} — première version, {date}. Avant la 1.0.",
+    statusLine: "v{version}, publiée le {date}. Avant la 1.0.",
     copyright: "© 2026 Ben Hattab",
     linkLabels: { github: "GitHub", docs: "Docs", changelog: "Changelog", license: "Licence" },
   },

@@ -36,7 +36,7 @@ export const en: Content = {
       "Accord is an open-source, self-hosted sync engine for field apps: data lives in local SQLite or IndexedDB, truth in PostgreSQL on the server, replicas merged by declared rules instead of luck.",
     ctaHow: "How it works",
     ctaGithub: "GitHub",
-    statusLine: "v{version} — first release, {date}. Pre-1.0: the API may still change.",
+    statusLine: "v{version}, released {date}. Pre-1.0: the API may still change.",
     scene: {
       labels: {
         devices: ["Device A", "Device B", "Device C"],
@@ -321,7 +321,7 @@ export const en: Content = {
 
   footer: {
     tagline: "Built for networks that lie.",
-    statusLine: "v{version} — first release, {date}. Pre-1.0.",
+    statusLine: "v{version}, released {date}. Pre-1.0.",
     copyright: "© 2026 Ben Hattab",
     linkLabels: { github: "GitHub", docs: "Docs", changelog: "Changelog", license: "Licence" },
   },

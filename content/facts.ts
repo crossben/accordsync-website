@@ -34,10 +34,10 @@ export const repo = {
 } as const;
 
 /**
- * Version. Source: app/CHANGELOG.md ("## [0.1.0] - 2026-10-02") and app/README.md's status note
- * ("v0.1.0, first release"). check-facts.mjs fails the build if either changes.
+ * Version. Source: app/CHANGELOG.md ("## [0.2.0] - 2026-10-03") and app/README.md's status note
+ * ("Status: v0.2.0"). check-facts.mjs fails the build if either changes.
  */
-export const version = { number: "0.1.0", date: "2026-10-02" } as const;
+export const version = { number: "0.2.0", date: "2026-10-03" } as const;
 
 /**
  * Licence. Source: app/README.md ("## Licence" → "[Apache-2.0](LICENSE)") and

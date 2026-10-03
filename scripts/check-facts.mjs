@@ -198,11 +198,11 @@ const FACTS = [
     strings: ["protocolVersion: 1"],
   },
   {
-    id: "version 0.1.0, released 2026-10-02 (facts.version)",
+    id: "version 0.2.0, released 2026-10-03 (facts.version)",
     base: "app",
     file: "CHANGELOG.md",
-    strings: ["## [0.1.0] - 2026-10-02"],
-    appSource: { file: "README.md", strings: ["v0.1.0, first release"] },
+    strings: ["## [0.2.0] - 2026-10-03"],
+    appSource: { file: "README.md", strings: ["Status: v0.2.0"] },
   },
   // Built on 2026-10-02: each guarantee cites the test that proves it (facts.guarantees).
   {

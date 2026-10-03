@@ -1,0 +1,19 @@
+{
+  "name": "__NAME__",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "server": "node --env-file=.env node_modules/@accordsync/server/dist/main.mjs serve --config accord.config.ts",
+    "compact": "node --env-file=.env node_modules/@accordsync/server/dist/main.mjs compact --config accord.config.ts",
+    "token": "node --env-file=.env dev-token.mjs",
+    "client": "node --env-file=.env client.ts"
+  },
+  "dependencies": {
+    "@accordsync/client": "^__VERSION__",
+    "@accordsync/core": "^__VERSION__",
+    "@accordsync/server": "^__VERSION__"
+  }
+}

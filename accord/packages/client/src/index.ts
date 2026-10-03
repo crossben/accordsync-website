@@ -2,6 +2,7 @@ export { conflict, counter, defineSchema, lww, set } from '@accordsync/core';
 export type { ConflictRead, FieldRead, JsonValue, Op, Schema, SetElement } from '@accordsync/core';
 export {
   AccordClient,
+  randomDeviceId,
   type ClientEvents,
   type ClientOptions,
   type ConflictInfo,

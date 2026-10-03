@@ -1,0 +1,47 @@
+{
+  "name": "@accordsync/react",
+  "version": "0.2.0",
+  "description": "React hooks for Accord: records, conflicts and sync status that re-render when local state changes",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crossben/accordsync.git",
+    "directory": "packages/react"
+  },
+  "exports": {
+    ".": {
+      "@accordsync/source": "./src/index.tsx",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsdown src/index.tsx --format esm --dts --clean --platform neutral --target es2022 --external react --external @accordsync/client",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@accordsync/client": "workspace:^",
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@accordsync/client": "workspace:*",
+    "@accordsync/core": "workspace:*",
+    "@testing-library/react": "^16.3.3",
+    "@types/react": "^19.3.0",
+    "jsdom": "^30.1.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  }
+}

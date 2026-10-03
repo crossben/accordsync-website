@@ -3,3 +3,4 @@ coverage/
 pnpm-lock.yaml
 LICENSE
 protocol/
+packages/create-accord/template/

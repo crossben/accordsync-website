@@ -1,6 +1,6 @@
 {
   "name": "@accordsync/client",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Accord local-first client: storage adapters, background sync, conflict API",
   "keywords": [
     "offline-first",

@@ -1,4 +1,5 @@
 export { conflict, counter, defineSchema, lww, set } from '@accordsync/core';
+export type { FieldRead } from '@accordsync/core';
 export { createApp, type AppDeps } from './app';
 export { AuthError, createVerifier } from './auth';
 export { compact, type CompactionResult } from './compact';

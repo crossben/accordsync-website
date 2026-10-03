@@ -104,8 +104,7 @@ export class AccordClient {
       ...opts,
     };
     const snap = await o.storage.load();
-    const deviceId =
-      snap.meta?.deviceId ?? opts.deviceId ?? `d${crypto.randomUUID().replaceAll('-', '')}`;
+    const deviceId = snap.meta?.deviceId ?? opts.deviceId ?? randomDeviceId();
     const client = new AccordClient(o, deviceId, snap.meta);
     for (const base of snap.snapshots) client.#writer.replica.loadSnapshot(base);
     for (const raw of snap.ops) client.#writer.receive(decodeOp(raw));
@@ -397,4 +396,20 @@ function bySeq(a: string, b: string): number {
 
 function unique<T>(xs: T[]): T[] {
   return [...new Set(xs)];
+}
+
+/**
+ * A random device id. Uses `crypto.randomUUID` (browsers, Node) or `crypto.getRandomValues` (React
+ * Native with react-native-get-random-values). Never Math.random: device ids must not collide.
+ */
+export function randomDeviceId(c: Partial<Crypto> | undefined = globalThis.crypto): string {
+  if (c?.randomUUID) return `d${c.randomUUID().replaceAll('-', '')}`;
+  if (c?.getRandomValues) {
+    const bytes = c.getRandomValues(new Uint8Array(16));
+    return `d${Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')}`;
+  }
+  throw new Error(
+    'accord: no secure random source to create a device id. On React Native, install and import ' +
+      "'react-native-get-random-values' first, or pass `deviceId` to AccordClient.open.",
+  );
 }

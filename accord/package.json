@@ -18,6 +18,7 @@
   },
   "devDependencies": {
     "@accordsync/core": "workspace:*",
+    "@accordsync/server": "workspace:*",
     "@eslint/js": "^10.0.0",
     "@types/node": "^24.0.0",
     "eslint": "^10.11.0",

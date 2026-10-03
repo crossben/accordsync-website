@@ -6,7 +6,18 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-03
+
 ### Added
+
+- `@accordsync/react`: `AccordProvider`, `useRecord`, `useRecords`, `useConflicts`, `useSyncStatus`;
+  components re-render only when what they read changed.
+- `create-accord`: `npm create accord my-app` scaffolds a schema, server config, PostgreSQL compose
+  file, development tokens and a client that writes offline and syncs.
+- `docs/scopes.md`: five scope patterns with tests (`examples/scopes`), and the rules that keep
+  scopes correct. `docs/react-native.md`: op-sqlite storage and sync around the app lifecycle.
+- React Native: device ids fall back to `crypto.getRandomValues` (react-native-get-random-values);
+  without a secure random source, opening fails with an explanation instead of crashing.
 
 - Concurrent pushes (ADR-0010): pushes lock only the records they write; pulls read the feed in
   transaction order up to the oldest running transaction, so no op is ever skipped.
@@ -85,5 +96,6 @@ First release.
 - M0 skeleton: pnpm monorepo (`core`, `client`, `server`, `simulator`), server health endpoint
   with PostgreSQL migrations, Docker image, Compose file, CI.
 
-[Unreleased]: https://github.com/crossben/accordsync/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/crossben/accordsync/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/crossben/accordsync/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/crossben/accordsync/releases/tag/v0.1.0

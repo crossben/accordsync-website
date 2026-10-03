@@ -5,7 +5,7 @@
 Apps keep working with no connection. When it comes back, Accord passes every change along, and
 every device ends up with the same data. Every device, in accord.
 
-> **Status: v0.1.0, first release.** Pre-1.0: the API may still change between minor versions.
+> **Status: v0.2.0.** Pre-1.0: the API may still change between minor versions.
 > Design decisions are recorded in [`docs/adr/`](docs/adr/).
 
 ## What it will be
@@ -78,7 +78,14 @@ accord.start();
 await accord.inc('dossier:91', 'visits', 1); // works offline
 ```
 
-See [docs/client.md](docs/client.md): conflicts, events, SQLite on React Native.
+Start a project in one command: `npm create accord my-app`.
+
+| Guide                                         |                                                                   |
+| --------------------------------------------- | ----------------------------------------------------------------- |
+| [docs/client.md](docs/client.md)              | Writes, conflicts, events, storage                                |
+| [@accordsync/react](packages/react/README.md) | `useRecord`, `useConflicts`, `useSyncStatus`                      |
+| [docs/react-native.md](docs/react-native.md)  | op-sqlite storage, background-friendly sync                       |
+| [docs/scopes.md](docs/scopes.md)              | Tested scope patterns: personal, team, supervisor, tenant, shared |
 
 ## Repository layout
 

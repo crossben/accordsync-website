@@ -1,0 +1,33 @@
+{
+  "name": "create-accord",
+  "version": "0.2.0",
+  "description": "Scaffold an Accord project: npm create accord my-app",
+  "license": "Apache-2.0",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crossben/accordsync.git",
+    "directory": "packages/create-accord"
+  },
+  "bin": {
+    "create-accord": "./index.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "template",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "node --check index.mjs",
+    "typecheck": "node --check index.mjs",
+    "test": "node --test test/scaffold.test.mjs"
+  }
+}

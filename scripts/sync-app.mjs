@@ -13,7 +13,15 @@
 //
 // The website repo never writes to the Accord repository (website.md section 9):
 // this script only reads it.
-import { cpSync, existsSync, readdirSync, rmSync, statSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -53,6 +61,12 @@ const excluded = (rel) => {
   return parts.some((p) => EXCLUDED_DIRS.has(p)) || parts.some((p) => p.endsWith(".tsbuildinfo"));
 };
 
+// plan.md lives outside the Accord repository. Where it is not available (CI), keep the committed
+// copy: remember it before the snapshot is wiped, and put it back afterwards.
+const committedPlan = join(dest, "plan.md");
+const keptPlan =
+  !existsSync(planFile) && existsSync(committedPlan) ? readFileSync(committedPlan) : null;
+
 rmSync(dest, { recursive: true, force: true });
 cpSync(appDir, dest, {
   recursive: true,
@@ -64,7 +78,8 @@ cpSync(appDir, dest, {
 // plan.md travels with the snapshot: most facts cite it (website.md section 4).
 if (existsSync(planFile)) {
   cpSync(planFile, join(dest, "plan.md"));
-} else {
+} else if (keptPlan) {
+  writeFileSync(committedPlan, keptPlan);
   console.log(
     `[sync:app] Note: plan.md not found at ${planFile} — the committed copy in\n` +
       `[sync:app] accord/plan.md (if any) is kept. Set ACCORD_PLAN_FILE to override.`,

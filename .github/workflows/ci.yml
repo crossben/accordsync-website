@@ -46,26 +46,42 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Read-only. ACCORD_APP_READ_TOKEN is a fine-grained PAT with
-      # Contents: read on crossben/accordsync only (created by the owner,
-      # website.md section 9). Once that repository is public, the `token:`
-      # line can be dropped. Checked out as accord-src — never `app`, which is
-      # the website's own Next.js routes directory.
+      # Can this job read crossben/accordsync? Yes if the repository is public (the built-in
+      # token is enough), or if the owner added ACCORD_APP_READ_TOKEN: a fine-grained PAT with
+      # Contents: read on crossben/accordsync only. Otherwise skip with a warning instead of
+      # failing CI: the build job above does not need the repository.
+      - name: Check access to the Accord repository
+        id: access
+        env:
+          READ_TOKEN: ${{ secrets.ACCORD_APP_READ_TOKEN }}
+        run: |
+          if [ -n "$READ_TOKEN" ] || git ls-remote https://github.com/crossben/accordsync HEAD >/dev/null 2>&1; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Drift check skipped: crossben/accordsync is private and ACCORD_APP_READ_TOKEN is not set. Make the repository public, or add the secret."
+          fi
+
+      # Checked out as accord-src — never `app`, which is the website's own Next.js routes directory.
       - uses: actions/checkout@v4
+        if: steps.access.outputs.ok == 'true'
         with:
           repository: crossben/accordsync
           path: accord-src
-          token: ${{ secrets.ACCORD_APP_READ_TOKEN }}
+          token: ${{ secrets.ACCORD_APP_READ_TOKEN || github.token }}
 
       - uses: actions/setup-node@v4
+        if: steps.access.outputs.ok == 'true'
         with:
           node-version-file: .nvmrc
           cache: npm
 
       - run: node scripts/sync-app.mjs --require
+        if: steps.access.outputs.ok == 'true'
         env:
           ACCORD_APP_DIR: accord-src
       - name: Fail if the snapshot fell behind the repository
+        if: steps.access.outputs.ok == 'true'
         run: |
           if ! git diff --exit-code -- accord/; then
             echo "::error::accord/ is stale: the Accord repository moved on. Run 'npm run sync:app', then update facts/copy if check-facts asks, and commit."

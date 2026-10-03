@@ -5,8 +5,8 @@
 Apps keep working with no connection. When it comes back, Accord passes every change along, and
 every device ends up with the same data. Every device, in accord.
 
-> **Status: in development, not released.** Nothing here is ready to use yet. Design decisions
-> are recorded in [`docs/adr/`](docs/adr/).
+> **Status: v0.1.0, first release.** Pre-1.0: the API may still change between minor versions.
+> Design decisions are recorded in [`docs/adr/`](docs/adr/).
 
 ## What it will be
 
@@ -110,9 +110,15 @@ docker compose up --build   # PostgreSQL + server on :8080
 curl localhost:8080/health
 ```
 
+## Performance
+
+On one laptop (i7-11800H, PostgreSQL 16 defaults, one server process), Accord accepted about
+**1 000 ops/s** with pulls at p95 ≤ 20 ms, and no failed requests up to 200 devices pushing
+non-stop. Details, hardware and caveats: [load/README.md](load/README.md).
+
 ## Security
 
-Report vulnerabilities privately: see [SECURITY.md](SECURITY.md). Before deploying, go through the
+Contributions are welcome: see [CONTRIBUTING.md](CONTRIBUTING.md). Report vulnerabilities privately: see [SECURITY.md](SECURITY.md). Before deploying, go through the
 [security checklist](docs/security.md).
 
 ## Licence

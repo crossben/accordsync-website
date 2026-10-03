@@ -1,6 +1,8 @@
 export interface Config {
   port: number;
   databaseUrl: string;
+  /** Maximum PostgreSQL connections (default 20). */
+  dbPoolSize: number;
 }
 
 /** Reads configuration from the environment and fails fast on anything missing or malformed. */
@@ -15,5 +17,9 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
   if (!Number.isInteger(port) || port <= 0 || port > 65535) {
     throw new Error(`ACCORD_PORT must be a TCP port, got "${env.ACCORD_PORT}"`);
   }
-  return { port, databaseUrl };
+  const dbPoolSize = Number(env.ACCORD_DB_POOL ?? 20);
+  if (!Number.isInteger(dbPoolSize) || dbPoolSize < 2) {
+    throw new Error(`ACCORD_DB_POOL must be an integer ≥ 2, got "${env.ACCORD_DB_POOL}"`);
+  }
+  return { port, databaseUrl, dbPoolSize };
 }

@@ -9,7 +9,7 @@ export const dynamic = "force-static";
 const SITE = "https://accord.benhattab.pro";
 
 export function GET() {
-  const status = version ?? "in development, not released yet; no version tagged";
+  const status = `v${version.number} (${version.date}), pre-1.0`;
   const body = `# Accord
 
 > Accord is an open-source, self-hosted, offline-first sync engine in
@@ -37,7 +37,7 @@ live views, and no performance numbers are claimed anywhere.
   the site are checked against it at build time.
 - [README](${repo.blob}/README.md): what Accord is and is not, the repository
   layout, and the develop guide.
-- [CHANGELOG](${repo.changelog}): release status (currently unreleased).
+- [CHANGELOG](${repo.changelog}): releases (latest: v${version.number}).
 - [Architecture decisions](${repo.blob}/docs/adr): why Accord, TypeScript
   everywhere, merge strategies v1, scope exit, compaction and device TTL.
 - [Licence](${repo.license}): ${licence.accord}.

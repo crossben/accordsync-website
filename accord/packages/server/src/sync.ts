@@ -8,8 +8,8 @@ import {
   Replica,
   type WireOp,
 } from '@accordsync/core';
-import { sql } from 'kysely';
-import type { Db } from './db';
+import { type Insertable, sql } from 'kysely';
+import type { Database, Db } from './db';
 import type { ServerDefinition } from './define';
 import type { Metrics } from './metrics';
 import type { PullItem, PullResponse, PushResponse } from './protocol';
@@ -44,6 +44,17 @@ export interface SyncContext {
 export const FEED_LOCK = 0x4acc0d;
 
 export const DAY_MS = 24 * 3_600_000;
+
+/** Runs tasks one at a time, in arrival order. */
+class Queue {
+  #tail: Promise<unknown> = Promise.resolve();
+  run<T>(task: () => Promise<T>): Promise<T> {
+    const result = this.#tail.then(task);
+    this.#tail = result.catch(() => undefined);
+    return result;
+  }
+}
+const pushQueue = new Queue();
 
 export function deviceTtlMs(def: ServerDefinition): number {
   return (def.compaction?.deviceTtlDays ?? 30) * DAY_MS;
@@ -105,89 +116,102 @@ export async function push(
     byRecord.set(op.record, list);
   }
 
-  await ctx.db.transaction().execute(async (trx) => {
-    await sql`select pg_advisory_xact_lock(${FEED_LOCK})`.execute(trx);
-    const now = ctx.now();
+  // Pushes queue here, in the process, before taking a database connection: waiting on the feed
+  // lock while holding a connection would starve pulls of connections. The advisory lock below
+  // still serializes pushes across several server processes.
+  await pushQueue.run(() =>
+    ctx.db.transaction().execute(async (trx) => {
+      await sql`select pg_advisory_xact_lock(${FEED_LOCK})`.execute(trx);
+      const now = ctx.now();
 
-    for (const record of [...byRecord.keys()].sort()) {
-      const replica = await loadRecord(trx as unknown as Db, ctx.def, record);
-      const pending = byRecord.get(record)!;
-      const compacted = new Set(
-        (
-          await trx
-            .selectFrom('compacted_ops')
-            .select('op_id')
-            .where(
-              'op_id',
-              'in',
-              pending.map((o) => o.opId),
-            )
-            .execute()
-        ).map((r) => r.op_id),
-      );
-      const existing = await trx
-        .selectFrom('records')
-        .select('scopes')
-        .where('record', '=', record)
-        .executeTakeFirst();
-      let scopes: string[] | null = existing?.scopes ?? null;
+      for (const record of [...byRecord.keys()].sort()) {
+        const existing = await trx
+          .selectFrom('records')
+          .select(['scopes', 'state'])
+          .where('record', '=', record)
+          .executeTakeFirst();
+        let replica: Replica;
+        if (existing?.state) {
+          replica = new Replica(ctx.def.schema);
+          replica.loadSnapshot(existing.state);
+        } else {
+          // A new record, or one written before migration 0004: rebuild from the feed.
+          replica = await loadRecord(trx as unknown as Db, ctx.def, record);
+        }
+        const pending = byRecord.get(record)!;
+        const ids = pending.map((o) => o.opId);
+        // Already applied (in the feed) or folded by compaction: acknowledge, never apply twice.
+        const seen = new Set(
+          [
+            ...(await trx.selectFrom('feed').select('op_id').where('op_id', 'in', ids).execute()),
+            ...(await trx
+              .selectFrom('compacted_ops')
+              .select('op_id')
+              .where('op_id', 'in', ids)
+              .execute()),
+          ].map((r) => r.op_id!),
+        );
+        let scopes: string[] | null = existing?.scopes ?? null;
+        let changed = false;
+        const rows: Insertable<Database['feed']>[] = [];
 
-      for (const op of pending) {
-        if (replica.has(op.opId) || compacted.has(op.opId)) {
-          duplicates++;
-          acked.push(op.opId); // a retried push: already applied
-          continue;
-        }
-        const reason = check(ctx, caller, replica, scopes, op, now, maxSkewMs);
-        if (reason) {
-          refused.push({ op_id: op.opId, reason });
-          continue;
-        }
-        replica.apply(op);
-        let next: string[];
-        try {
-          next = scopesOf(ctx.def, replica, record);
-        } catch (e) {
-          throw new Error(`scope function failed for ${record}: ${(e as Error).message}`, {
-            cause: e,
-          });
-        }
-        // A scope change goes in before the op that caused it: a device the record is entering
-        // receives the history (snapshot and older ops) first, then this op on top.
-        if (scopes === null || !sameKeys(scopes, next)) {
-          await trx
-            .insertInto('feed')
-            .values({
+        for (const op of pending) {
+          if (seen.has(op.opId) || replica.has(op.opId)) {
+            duplicates++;
+            acked.push(op.opId); // a retried push: already applied
+            continue;
+          }
+          const reason = check(ctx, caller, replica, scopes, op, now, maxSkewMs);
+          if (reason) {
+            refused.push({ op_id: op.opId, reason });
+            continue;
+          }
+          replica.apply(op);
+          let next: string[];
+          try {
+            next = scopesOf(ctx.def, replica, record);
+          } catch (e) {
+            throw new Error(`scope function failed for ${record}: ${(e as Error).message}`, {
+              cause: e,
+            });
+          }
+          // A scope change goes in before the op that caused it: a device the record is entering
+          // receives the history (snapshot and older ops) first, then this op on top.
+          if (scopes === null || !sameKeys(scopes, next)) {
+            rows.push({
               kind: 'scope',
               record,
               op_id: null,
               op: null,
               scopes: next,
               scopes_before: scopes ?? [],
-            })
-            .execute();
-          await trx
-            .insertInto('records')
-            .values({ record, scopes: next })
-            .onConflict((oc) => oc.column('record').doUpdateSet({ scopes: next }))
-            .execute();
-        }
-        await trx
-          .insertInto('feed')
-          .values({
+            });
+          }
+          rows.push({
             kind: 'op',
             record,
             op_id: op.opId,
             op: encodeOp(op),
             scopes: next,
             scopes_before: null,
-          })
-          .execute();
-        scopes = next;
-        acked.push(op.opId);
+          });
+          scopes = next;
+          changed = true;
+          acked.push(op.opId);
+        }
+        if (changed) {
+          // One insert per record: rows get their seq in this order.
+          await trx.insertInto('feed').values(rows).execute();
+          const state = JSON.stringify(replica.snapshotRecord(record)) as never;
+          await trx
+            .insertInto('records')
+            .values({ record, scopes: scopes!, state })
+            .onConflict((oc) => oc.column('record').doUpdateSet({ scopes: scopes!, state }))
+            .execute();
+        }
       }
-    }
-  });
+    }),
+  );
 
   ctx.metrics?.pushBatch.observe(raw.length);
   ctx.metrics?.pushOps.inc({ result: 'duplicate' }, duplicates);

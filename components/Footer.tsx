@@ -1,5 +1,6 @@
 import type { Content } from "@/content/types";
-import { repo, version } from "@/content/facts";
+import { repo } from "@/content/facts";
+import { statusLine } from "@/lib/status";
 import { features } from "@/content/features";
 import Mark from "@/components/Mark";
 
@@ -23,11 +24,9 @@ export default function Footer({ content }: { content: Content }) {
         <div>
           <Mark className="h-8 w-11 text-accent" />
           <p className="mt-4 max-w-sm text-sm text-muted">{content.footer.tagline}</p>
-          {/* The required status line (website.md section 4). Until v0.1.0 is tagged,
-              `version` is null and this shows the "in development" line; after
-              the tag it shows the version and date. */}
+          {/* The required status line (website.md section 4): version and date from facts.ts. */}
           <p className="mt-2 font-mono text-xs text-muted">
-            {version ?? content.footer.statusLine}
+            {statusLine(content.footer.statusLine, content.lang)}
           </p>
         </div>
         <nav aria-label={content.lang === "en" ? "Footer" : "Pied de page"}>

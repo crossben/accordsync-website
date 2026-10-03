@@ -13,6 +13,9 @@
 
 export const npmName = "accordsync";
 
+/** A fact is "designed" (intent, Planned badge) or "built" (code and a passing test). */
+export type Tier = "designed" | "built";
+
 const REPO_BASE = "https://github.com/crossben/accordsync";
 const BLOB = `${REPO_BASE}/blob/main`;
 
@@ -20,9 +23,8 @@ const BLOB = `${REPO_BASE}/blob/main`;
 export const repo = {
   home: REPO_BASE,
   blob: BLOB,
-  /** plan.md section 6 — the proving-it-correct chapter the planned guarantees point at.
-   *  plan.md travels with the Accord repository; the root link always resolves. */
-  planProof: REPO_BASE,
+  /** The ADR index: design decisions and their reasons. */
+  planProof: `${BLOB}/docs/adr`,
   mergeRules: `${BLOB}/docs/merge-rules.md`,
   changelog: `${BLOB}/CHANGELOG.md`,
   license: `${BLOB}/LICENSE`,
@@ -32,14 +34,10 @@ export const repo = {
 } as const;
 
 /**
- * Version. Source: app/CHANGELOG.md. No version exists until `v0.1.0` is tagged,
- * so the site shows the required status line instead (website.md section 4):
- * "In development: not released yet. Follow along on GitHub." — which app/
- * README.md's own status note backs. After the tag: version and date.
- * check-facts.mjs fails the build the moment app/CHANGELOG.md gains a v0.1.0
- * heading, forcing this to be updated.
+ * Version. Source: app/CHANGELOG.md ("## [0.1.0] - 2026-10-02") and app/README.md's status note
+ * ("v0.1.0, first release"). check-facts.mjs fails the build if either changes.
  */
-export const version = null; // null until v0.1.0 — the site is "in development"
+export const version = { number: "0.1.0", date: "2026-10-02" } as const;
 
 /**
  * Licence. Source: app/README.md ("## Licence" → "[Apache-2.0](LICENSE)") and
@@ -64,27 +62,34 @@ export const licence = {
  * the "3 + 2 = 5" counter row the plan mandates in section 6), not performance claims.
  */
 export const strategies = [
-  { id: "lww", tier: "designed" },
-  { id: "counter", tier: "designed" },
-  { id: "set", tier: "designed" },
-  { id: "conflict", tier: "designed" },
+  { id: "lww", tier: "built" as Tier },
+  { id: "counter", tier: "built" as Tier },
+  { id: "set", tier: "built" as Tier },
+  { id: "conflict", tier: "built" as Tier },
 ] as const;
 
 export type StrategyId = (typeof strategies)[number]["id"];
 
 /**
- * Planned guarantees (website.md section 5.5). Every item is `designed` — none is
- * backed by a passing test in app/ yet, so the section renders them as Planned,
- * each pointing at plan.md section 6 via repo.planProof. When a fact moves to `built`,
- * add its source link here and the section renders it in the present tense.
+ * Guarantees (website.md section 5.5). All built on 2026-10-02: each cites the test in app/ that
+ * proves it, and check-facts.mjs asserts that test still contains the cited case.
  */
+const TEST = (path: string) => `${BLOB}/${path}`;
 export const guarantees = [
-  { key: "convergence", tier: "designed", source: null },
-  { key: "counters", tier: "designed", source: null },
-  { key: "conflicts", tier: "designed", source: null },
-  { key: "idempotent", tier: "designed", source: null },
-  { key: "resumable", tier: "designed", source: null },
-  { key: "scopes", tier: "designed", source: null },
+  {
+    key: "convergence",
+    tier: "built" as Tier,
+    source: TEST("packages/simulator/src/convergence.test.ts"),
+  },
+  {
+    key: "counters",
+    tier: "built" as Tier,
+    source: TEST("packages/simulator/src/convergence.test.ts"),
+  },
+  { key: "conflicts", tier: "built" as Tier, source: TEST("packages/core/src/laws.test.ts") },
+  { key: "idempotent", tier: "built" as Tier, source: TEST("packages/server/test/sync.test.ts") },
+  { key: "resumable", tier: "built" as Tier, source: TEST("packages/server/test/sync.test.ts") },
+  { key: "scopes", tier: "built" as Tier, source: TEST("packages/server/test/sync.test.ts") },
 ] as const;
 
 export type GuaranteeKey = (typeof guarantees)[number]["key"];
@@ -93,10 +98,38 @@ export type GuaranteeKey = (typeof guarantees)[number]["key"];
 export const notKeys = ["database", "collab", "business"] as const;
 
 /**
- * Proof section (website.md section 5.8): how correctness is tested, per plan.md section 6.
- * All designed until CI produces committed report files in app/.
+ * Proof section (website.md section 5.8). Built: the suites exist and run in CI.
+ * Case counts: app/.github/workflows/ci.yml (ACCORD_SIM_RUNS, ACCORD_PROPERTY_RUNS).
  */
 export const proofs = ["convergenceTest", "strategyLaws", "simulator"] as const;
+export const proofSources = {
+  convergenceTest: TEST("packages/simulator/src/convergence.test.ts"),
+  strategyLaws: TEST("packages/core/src/laws.test.ts"),
+  simulator: TEST("packages/simulator/src/simulation.ts"),
+} as const;
+export const ciRuns = { simulations: 3000, propertyCases: 2000 } as const;
+
+/**
+ * Load test (website.md section 4): app/load/README.md, measured 2026-10-02. Always shown with
+ * its hardware line and caveat.
+ */
+export const loadTest = {
+  source: `${BLOB}/load/README.md`,
+  hardware: "Intel Core i7-11800H laptop, 31 GiB RAM, PostgreSQL 16 defaults, one server process",
+  rows: [
+    { devices: 50, opsPerSec: 1004, pushP95: 548, pullP95: 14 },
+    { devices: 100, opsPerSec: 1033, pushP95: 1049, pullP95: 15 },
+    { devices: 200, opsPerSec: 984, pushP95: 2258, pullP95: 20 },
+  ],
+} as const;
+
+/** Real screenshot of app/examples/field-app (app/docs/screens/), copied to public/screens/. */
+export const screenshot = {
+  src: "/screens/field-app-conflict.webp",
+  width: 1040,
+  height: 815,
+  example: `${REPO_BASE}/tree/main/examples/field-app`,
+} as const;
 
 /** Clients (website.md section 4 / plan.md section 2). Dart/Flutter only as a roadmap line. */
 export const clients = {

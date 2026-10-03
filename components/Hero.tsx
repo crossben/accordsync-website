@@ -1,5 +1,6 @@
 import type { Content } from "@/content/types";
 import { repo } from "@/content/facts";
+import { statusLine } from "@/lib/status";
 import HeroSceneMount from "@/components/HeroSceneMount";
 
 export default function Hero({ content }: { content: Content }) {
@@ -48,7 +49,9 @@ export default function Hero({ content }: { content: Content }) {
           </div>
 
           {/* Required status line (website.md section 4). */}
-          <p className="mt-5 font-mono text-sm text-muted">{hero.statusLine}</p>
+          <p className="mt-5 font-mono text-sm text-muted">
+            {statusLine(hero.statusLine, content.lang)}
+          </p>
         </div>
 
         {/* The scene is decorative: fixed-height container (no CLS), text stays the LCP. */}

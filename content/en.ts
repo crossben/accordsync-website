@@ -10,7 +10,7 @@ export const en: Content = {
   meta: {
     title: "Accord — offline-first sync that stays correct when the network lies",
     description:
-      "Accord is an open-source, self-hosted offline-first sync engine in development: local-first writes, operations instead of overwrites, declared merge rules, and conflicts your app decides. TypeScript and PostgreSQL.",
+      "Accord is an open-source, self-hosted offline-first sync engine: local-first writes, operations instead of overwrites, declared merge rules, and conflicts your app decides. TypeScript and PostgreSQL.",
   },
 
   header: {
@@ -33,10 +33,10 @@ export const en: Content = {
     kicker: "Every device, in accord.",
     headline: "Offline-first sync that stays correct when the network lies.",
     subline:
-      "Accord is an open-source, self-hosted sync engine in development for field apps: data lives in local SQLite or IndexedDB, truth in PostgreSQL on the server, replicas merged by declared rules instead of luck.",
+      "Accord is an open-source, self-hosted sync engine for field apps: data lives in local SQLite or IndexedDB, truth in PostgreSQL on the server, replicas merged by declared rules instead of luck.",
     ctaHow: "How it works",
     ctaGithub: "GitHub",
-    statusLine: "In development: not released yet. Follow along on GitHub.",
+    statusLine: "v{version} — first release, {date}. Pre-1.0: the API may still change.",
     scene: {
       labels: {
         devices: ["Device A", "Device B", "Device C"],
@@ -71,8 +71,7 @@ export const en: Content = {
 
   how: {
     heading: "How sync works",
-    intro:
-      "The v1 design, written as intent. These steps follow one write from a device to every replica.",
+    intro: "These steps follow one write from a device to every replica.",
     planned: { label: "Planned", title: "Planned — described as designed, not built yet" },
     steps: [
       {
@@ -128,7 +127,7 @@ export const en: Content = {
     intro:
       "Every field declares its strategy in the schema, and the strategy decides who wins. conflict(): some disagreements deserve a meeting.",
     planned: { label: "Planned", title: "Planned — the strategies are designed, not built yet" },
-    note: "Ordered lists (a sequence CRDT) are planned after v1 — most field-app lists are really sets. The table will be generated from docs/merge-rules.md once those docs land.",
+    note: "Each rule is pinned down by golden test vectors every implementation must pass. Ordered lists (a sequence CRDT) are planned after v1 — most field-app lists are really sets.",
     table: {
       columns: { strategy: "Strategy", useFor: "Use for", rule: "Rule", example: "Example" },
       rows: {
@@ -163,39 +162,40 @@ export const en: Content = {
   guarantees: {
     heading: "What Accord guarantees",
     intro:
-      "Only guarantees with proof belong here — a passing test in the repository. None has landed yet, so every item is planned; each will link its test the day it becomes true.",
+      "Only guarantees with proof belong here: each one links the test in the repository that proves it.",
     planned: { label: "Planned", title: "Planned — awaiting a passing test in the repository" },
     whyLabel: "Why it matters:",
-    sourceLink: { label: "crossben/accordsync — the plan (section 6)" },
+    testLink: "The test",
+    sourceLink: { label: "Design decisions (ADRs)" },
     items: {
       convergence: {
         title: "Every replica converges",
-        body: "After sync, all replicas are designed to hold an identical state — to be proven by property tests under random network faults.",
+        body: "After sync, every replica holds an identical state — checked by thousands of generated runs under dropped, delayed, duplicated and reordered messages.",
         why: "Offline days are normal; divergence is silent.",
       },
       counters: {
         title: "Counters never lose an increment",
-        body: "A counter is designed to equal the sum of all increments ever made, under any delivery order.",
+        body: "A counter equals the sum of all the increments the server accepted, under any delivery order.",
         why: "Collected quantities and stock must add up.",
       },
       conflicts: {
         title: "conflict() is never auto-resolved",
-        body: "Fields marked conflict() are designed to surface both values and stay flagged until the app resolves them.",
+        body: "Fields marked conflict() surface every concurrent value and stay flagged until the app resolves them.",
         why: "Accord never guesses on money or legal status.",
       },
       idempotent: {
         title: "Replayed ops change nothing",
-        body: "Operations are designed to be idempotent: applying one twice changes nothing, so resending a batch after a dropped connection is harmless.",
+        body: "Operations are idempotent: applying one twice changes nothing, so resending a batch after a dropped connection is harmless.",
         why: "Mobile networks drop mid-batch, all the time.",
       },
       resumable: {
         title: "Sync resumes, days later",
-        body: "A device offline for days is designed to sync in resumable pages: if it dies at page 7, it resumes at page 7.",
+        body: "A device offline for days syncs in resumable pages: if it dies at page 7, it resumes at page 7.",
         why: "Long outages are the whole point of offline-first.",
       },
       scopes: {
         title: "Scopes are enforced on the server",
-        body: "The server is designed to filter every pull and reject every op outside a user's scope, reporting refusals to the client.",
+        body: "The server filters every pull and refuses every op outside a user's scope; the device rolls the refused change back and tells the app.",
         why: "A silently diverging client is a data bug waiting.",
       },
     },
@@ -213,16 +213,22 @@ export const en: Content = {
     },
     copy: "Copy",
     copied: "Copied",
+    screenshot: {
+      alt: "The Accord field-app example: a dossier where two agents set different statuses while offline. Visits show 3, and a box says “Agents disagree. Accord kept every value. Which one is right?” with a button for each value.",
+      caption:
+        "The field-app example in the repository, after two agents edited the same dossier offline: every visit counted, and the status they disagree on waits for a human.",
+      link: "examples/field-app",
+    },
   },
 
   quickstart: {
     heading: "Run it yourself",
     intro:
-      "The skeleton is up: one server, PostgreSQL, a health check. The repository's own quick start — a developer preview, not a release.",
+      "The repository's quick start: PostgreSQL and the sync server in Docker Compose, with an example configuration.",
     steps: [
       {
         title: "Clone the repository",
-        body: "It is private for now, so you need access.",
+        body: "The server, the client, the example apps and the docs live in one repository.",
         commands: ["git clone https://github.com/crossben/accordsync", "cd accordsync"],
       },
       {
@@ -243,8 +249,7 @@ export const en: Content = {
 
   proof: {
     heading: "Proof",
-    intro:
-      "Correctness is a test suite, not a promise. These proofs are being built, per the plan (section 6); real numbers appear when CI produces them.",
+    intro: "Correctness is a test suite, not a promise. These suites run on every change.",
     planned: { label: "Planned", title: "Planned — the test suites are being built" },
     items: {
       convergenceTest: {
@@ -260,6 +265,19 @@ export const en: Content = {
         body: "A deterministic network simulator — drop, delay, duplicate, reorder, partition. A CI failure replays locally with the same seed.",
       },
     },
+    testLink: "The tests",
+    ciLine:
+      "Each CI run generates {simulations} simulated networks and {propertyCases} cases per strategy law; a failure prints the seed that replays it.",
+    load: {
+      heading: "Under load",
+      intro:
+        "k6 devices pushing batches of 10 ops and pulling pages, non-stop, for 60 seconds per run. Pushes are serialized on purpose, so a pull can never skip an op: more devices wait longer, they do not add throughput.",
+      columns: { devices: "Devices", ops: "Ops/s accepted", push: "Push p95", pull: "Pull p95" },
+      hardwareLabel: "Measured on:",
+      caveat:
+        "No failed requests. One machine and a synthetic workload: run it on your own setup before relying on it.",
+      link: "Method and raw results",
+    },
   },
 
   not: {
@@ -272,7 +290,7 @@ export const en: Content = {
       },
       collab: {
         title: "Not real-time text collaboration",
-        body: "No shared rich-text editing in v1. Fields are scalars, sets, counters and lists of references.",
+        body: "No shared rich-text editing in v1. Fields are scalars, sets and counters.",
       },
       business: {
         title: "Not magic for business conflicts",
@@ -289,11 +307,11 @@ export const en: Content = {
     },
     contribute: {
       title: "Contribute",
-      body: "The repositories are private while the first milestones land. When they open, issues and pull requests are welcome; CONTRIBUTING.md will be linked here.",
+      body: "Issues and pull requests are welcome. A failing seed from the convergence suite is the best bug report there is.",
     },
     security: {
       title: "Security",
-      body: "Reports get a private channel — SECURITY.md in the repository will say how, once it exists.",
+      body: "Report vulnerabilities privately through GitHub. A checklist in the docs says what the server enforces and what you configure.",
     },
     roadmap: {
       title: "Roadmap",
@@ -303,7 +321,7 @@ export const en: Content = {
 
   footer: {
     tagline: "Built for networks that lie.",
-    statusLine: "In development: not released yet. Follow along on GitHub.",
+    statusLine: "v{version} — first release, {date}. Pre-1.0.",
     copyright: "© 2026 Ben Hattab",
     linkLabels: { github: "GitHub", docs: "Docs", changelog: "Changelog", license: "Licence" },
   },

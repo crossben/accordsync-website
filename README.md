@@ -64,11 +64,13 @@ was being built (the mechanism of website.md section 4):
   (checked in `scripts/check-facts.mjs` against `docs/adr/0002-typescript-everywhere.md`).
 - **Licence Apache-2.0** — app/README.md, section Licence + app/LICENSE exist since M0.
 
-Everything else (HLC, strategies, counter/conflict guarantees, resumable sync,
-scopes, convergence proofs) is still `designed` in `app/` and is written as
-intent on the site. The version fact is guarded the other way: the moment
-app/CHANGELOG.md grows a release heading, `check-facts` fails until the
-status line ("In development: not released yet. …") is updated.
+Since v0.1.0 (2026-10-02) the rest is `built` too, each fact citing the test or file that proves
+it: the four merge strategies (`docs/merge-rules.md`, golden vectors), the six guarantees (tests in
+`packages/simulator`, `packages/core`, `packages/server`), the CI case counts (`ci.yml`), the load
+numbers (`load/README.md`, rows cross-checked against `facts.loadTest`), `SECURITY.md`,
+`CONTRIBUTING.md` and the field-app screenshot. Planned badges render only while a section still
+has a `designed` fact. The version fact (`content/facts.ts` `version`) must match the latest release
+heading in app/CHANGELOG.md, or `check-facts` fails.
 
 ## Stack
 
@@ -171,8 +173,8 @@ third-party services:
 - **`robots.txt`** and **`sitemap.xml`** (with hreflang alternates) — Next
   metadata routes, built static.
 - **`/llms.txt`** (`app/llms.txt/route.ts`): the llmstxt.org convention for
-  LLM crawlers — an H1, an honest status summary ("in development, not
-  released"), sections linking the page (EN/FR), the repository (README,
+  LLM crawlers — an H1, an honest status summary (version, date,
+  pre-1.0), sections linking the page (EN/FR), the repository (README,
   CHANGELOG, ADRs, LICENSE) and a Facts section restating the facts sheet so
   models quoting the site inherit its hedges. Generated from
   `content/facts.ts` at build time; it cannot drift from the facts sheet.
@@ -243,9 +245,9 @@ No deploy step is implemented. Options, per website.md section 9:
   (M0), so the section is on, with its commands and the real health response
   guarded by `check-facts`. Flip `features.quickstart` off if you'd rather wait
   for a fuller README.
-- **Footer status line**: shows the required "in development" line until
-  v0.1.0; `content/facts.ts` `version` flips to the version string in the same
-  PR as the tag.
+- **Status line** (hero and footer): `v{version} — first release, {date}`, from
+  `content/facts.ts` `version`, with the date written per language. Bump it in the same PR as a
+  new release heading in app/CHANGELOG.md.
 - **Word count**: measured on the built pages, excluding code blocks and the
   SVG diagrams: ~1 200 words EN / ~1 330 FR counted — and that counter also
   sees the sr-only strings and UI chrome (nav labels, buttons, badges). Visible

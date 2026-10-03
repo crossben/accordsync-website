@@ -1,7 +1,8 @@
 import { encodeOp, LocalWriter } from '@accordsync/core';
 import { sql } from 'kysely';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { type Harness, schema, startHarness, TestDevice, token } from './harness';
+import { loadRecord } from '../src/sync';
+import { def, type Harness, schema, startHarness, TestDevice, token } from './harness';
 
 describe('sync over HTTP, against real PostgreSQL', () => {
   let h: Harness;
@@ -227,4 +228,34 @@ describe('sync over HTTP, against real PostgreSQL', () => {
     expect(reader.writer.replica.size).toBe(8 * 22);
     expect(reader.writer.replica.snapshot()).toBe(expected.replica.snapshot());
   }, 60_000);
+
+  it('the stored record state always equals a rebuild from the feed', async () => {
+    const devices = await Promise.all(
+      ['a', 'b', 'c'].map(async (n) => new TestDevice(h, `${n}-dev`, await token('alice'))),
+    );
+    await devices[0]!.push([devices[0]!.writer.assign('dossier:1', 'agent', 'alice')]);
+    for (let round = 0; round < 6; round++) {
+      for (const [i, d] of devices.entries()) {
+        await d.pullAll();
+        const w = d.writer;
+        const ops = [
+          w.inc('dossier:1', 'visits', i + 1),
+          w.add('dossier:1', 'docs', `doc-${(round + i) % 3}`),
+          w.assign('dossier:1', 'status', `s${(round * 3 + i) % 4}`),
+          ...(round % 2 ? [w.remove('dossier:1', 'docs', `doc-${round % 3}`)] : []),
+        ];
+        await d.push(ops);
+      }
+    }
+    const stored = await h.db
+      .selectFrom('records')
+      .select('state')
+      .where('record', '=', 'dossier:1')
+      .executeTakeFirstOrThrow();
+    const fromState = new (await import('@accordsync/core')).Replica(schema);
+    fromState.loadSnapshot(stored.state!);
+    const rebuilt = await loadRecord(h.db, def, 'dossier:1');
+    expect(fromState.read('dossier:1')).toEqual(rebuilt.read('dossier:1'));
+    expect(rebuilt.read('dossier:1')?.visits).toBe(36);
+  });
 });

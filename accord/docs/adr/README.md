@@ -13,3 +13,4 @@ supersedes the old one.
 | [0006](0006-refused-ops-roll-back.md)  | Refused ops are rolled back on the device that wrote them     |
 | [0007](0007-server-feed-and-scopes.md) | The server feed, sync scopes in code, resync on scope change  |
 | [0008](0008-snapshots.md)              | Compaction folds history into record snapshots                |
+| [0009](0009-server-record-state.md)    | The server keeps each record's current state                  |

@@ -1,7 +1,17 @@
 import ExternalArrow from "@/components/ExternalArrow";
 import { highlight } from "@/lib/shiki";
 import { codeSnippets } from "@/lib/snippets";
-import { guarantees, licence, repo, proofs } from "@/content/facts";
+import {
+  ciRuns,
+  guarantees,
+  licence,
+  loadTest,
+  proofSources,
+  proofs,
+  repo,
+  screenshot,
+  strategies,
+} from "@/content/facts";
 import { features } from "@/content/features";
 import type { Content } from "@/content/types";
 import Header from "@/components/Header";
@@ -75,7 +85,15 @@ async function CodeBlock({
   );
 }
 
+const isDesigned = (facts: readonly { tier: string }[]) => facts.some((f) => f.tier === "designed");
+
+const linkClass =
+  "font-medium text-ink underline decoration-accent decoration-2 underline-offset-4 hover:text-accent";
+
 export default async function Page({ content }: { content: Content }) {
+  // A section keeps its Planned badge only while one of its facts is still designed.
+  const strategiesPlanned = isDesigned(strategies);
+  const guaranteesPlanned = isDesigned(guarantees);
   const tabs: CodeTab[] = await Promise.all(
     (
       [
@@ -129,7 +147,7 @@ export default async function Page({ content }: { content: Content }) {
         <Section
           id="how"
           title={content.how.heading}
-          badge={<PlannedBadge planned={content.how.planned} />}
+          badge={strategiesPlanned ? <PlannedBadge planned={content.how.planned} /> : null}
           intro={content.how.intro}
         >
           <SyncTimeline t={content.how.timeline} />
@@ -155,7 +173,7 @@ export default async function Page({ content }: { content: Content }) {
         <Section
           id="merges"
           title={content.merges.heading}
-          badge={<PlannedBadge planned={content.merges.planned} />}
+          badge={strategiesPlanned ? <PlannedBadge planned={content.merges.planned} /> : null}
           intro={content.merges.intro}
         >
           <MergeTable content={content.merges} />
@@ -174,11 +192,11 @@ export default async function Page({ content }: { content: Content }) {
         <Section
           id="guarantees"
           title={content.guarantees.heading}
-          badge={<PlannedBadge planned={content.guarantees.planned} />}
+          badge={guaranteesPlanned ? <PlannedBadge planned={content.guarantees.planned} /> : null}
           intro={content.guarantees.intro}
         >
           <Reveal className="grid gap-4 md:grid-cols-2 lg:grid-cols-3" stagger>
-            {guarantees.map(({ key, tier }) => {
+            {guarantees.map(({ key, tier, source }) => {
               const item = content.guarantees.items[key];
               return (
                 <div
@@ -196,7 +214,11 @@ export default async function Page({ content }: { content: Content }) {
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-line px-2.5 py-0.5 text-xs font-medium text-muted">
                         {content.guarantees.planned.label}
                       </span>
-                    ) : null}
+                    ) : (
+                      <a href={source} className={`text-sm ${linkClass}`}>
+                        {content.guarantees.testLink} <ExternalArrow />
+                      </a>
+                    )}
                   </p>
                 </div>
               );
@@ -224,6 +246,25 @@ export default async function Page({ content }: { content: Content }) {
             </p>
           )}
           <CodeTabs tabs={tabs} labels={content.code} />
+          {features.screenshots ? (
+            <figure className="mt-12">
+              <img
+                src={screenshot.src}
+                width={screenshot.width}
+                height={screenshot.height}
+                alt={content.code.screenshot.alt}
+                loading="lazy"
+                decoding="async"
+                className="h-auto w-full max-w-3xl rounded-xl border border-line"
+              />
+              <figcaption className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
+                {content.code.screenshot.caption}{" "}
+                <a href={screenshot.example} className={linkClass}>
+                  {content.code.screenshot.link} <ExternalArrow />
+                </a>
+              </figcaption>
+            </figure>
+          ) : null}
         </Section>
 
         {/* 7 — Playground: hidden until M2 (features.playground, section 5.7). It will run
@@ -231,34 +272,83 @@ export default async function Page({ content }: { content: Content }) {
             rendered here until then. */}
 
         {/* 8 — Proof */}
-        <Section
-          id="proof"
-          title={content.proof.heading}
-          badge={<PlannedBadge planned={content.proof.planned} />}
-          intro={content.proof.intro}
-        >
+        <Section id="proof" title={content.proof.heading} intro={content.proof.intro}>
           <Reveal className="grid gap-4 md:grid-cols-3" stagger>
             {proofs.map((key) => {
               const item = content.proof.items[key];
               return (
-                <div key={key} className="rounded-xl border border-line bg-surface p-6">
+                <div
+                  key={key}
+                  className="flex flex-col rounded-xl border border-line bg-surface p-6"
+                >
                   <h3 className="font-semibold leading-snug">{item.title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted">{item.body}</p>
+                  <p className="mt-auto pt-4">
+                    <a href={proofSources[key]} className={`text-sm ${linkClass}`}>
+                      {content.proof.testLink} <ExternalArrow />
+                    </a>
+                  </p>
                 </div>
               );
             })}
           </Reveal>
-          {/* Real numbers render here once features.proofNumbers turns on and a
-              committed app/ report file backs them (section 4: load-test table only with
-              hardware line). Hidden until then — never invented. */}
-          <p className="mt-6 text-sm text-muted">
-            <a
-              href={repo.planProof}
-              className="font-medium text-ink underline decoration-accent decoration-2 underline-offset-4 hover:text-accent"
-            >
-              {content.guarantees.sourceLink.label} <ExternalArrow />
-            </a>
-          </p>
+          {features.proofNumbers ? (
+            <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted">
+              {content.proof.ciLine
+                .replace("{simulations}", ciRuns.simulations.toLocaleString(content.lang))
+                .replace("{propertyCases}", ciRuns.propertyCases.toLocaleString(content.lang))}
+            </p>
+          ) : null}
+          {features.loadTest ? (
+            <div className="mt-12">
+              <h3 className="text-xl font-semibold">{content.proof.load.heading}</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+                {content.proof.load.intro}
+              </p>
+              <div className="mt-4 overflow-x-auto rounded-xl border border-line">
+                <table className="w-full min-w-[28rem] border-collapse bg-surface text-sm">
+                  <thead>
+                    <tr className="border-b border-line text-right">
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        {content.proof.load.columns.devices}
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        {content.proof.load.columns.ops}
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        {content.proof.load.columns.push}
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-semibold">
+                        {content.proof.load.columns.pull}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="font-mono">
+                    {loadTest.rows.map((r) => (
+                      <tr
+                        key={r.devices}
+                        className="border-b border-line text-right last:border-b-0"
+                      >
+                        <th scope="row" className="px-4 py-3 font-medium">
+                          {r.devices}
+                        </th>
+                        <td className="px-4 py-3">{r.opsPerSec.toLocaleString(content.lang)}</td>
+                        <td className="px-4 py-3">{r.pushP95.toLocaleString(content.lang)} ms</td>
+                        <td className="px-4 py-3">{r.pullP95} ms</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
+                <span className="font-medium text-ink">{content.proof.load.hardwareLabel}</span>{" "}
+                {loadTest.hardware}. {content.proof.load.caveat}{" "}
+                <a href={loadTest.source} className={linkClass}>
+                  {content.proof.load.link} <ExternalArrow />
+                </a>
+              </p>
+            </div>
+          ) : null}
         </Section>
 
         {/* 9 — Run it yourself (features.quickstart; section 5.9) */}

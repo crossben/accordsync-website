@@ -16,7 +16,8 @@ export interface Database {
     scopes: string[];
     scopes_before: string[] | null;
   };
-  records: { record: string; scopes: string[] };
+  /** `state` is null for records written before migration 0004 (rebuilt from the feed). */
+  records: { record: string; scopes: string[]; state: RecordSnapshot | null };
   compacted_ops: { op_id: string };
   devices: {
     device_id: string;
@@ -31,8 +32,10 @@ export interface Database {
 
 export type Db = Kysely<Database>;
 
-export function createDb(databaseUrl: string): Db {
+export function createDb(databaseUrl: string, poolSize = 20): Db {
   return new Kysely<Database>({
-    dialect: new PostgresDialect({ pool: new pg.Pool({ connectionString: databaseUrl }) }),
+    dialect: new PostgresDialect({
+      pool: new pg.Pool({ connectionString: databaseUrl, max: poolSize }),
+    }),
   });
 }

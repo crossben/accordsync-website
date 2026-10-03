@@ -11,7 +11,7 @@ export const fr: Content = {
   meta: {
     title: "Accord — la synchronisation offline-first qui reste correcte quand le réseau ment",
     description:
-      "Accord est un moteur de synchronisation offline-first open source et auto-hébergé, en développement : écriture locale d'abord, opérations plutôt que écrasements, règles de fusion déclarées, et des conflits que votre appli tranche. TypeScript et PostgreSQL.",
+      "Accord est un moteur de synchronisation offline-first open source et auto-hébergé : écriture locale d'abord, opérations plutôt qu'écrasements, règles de fusion déclarées, et des conflits que votre appli tranche. TypeScript et PostgreSQL.",
   },
 
   header: {
@@ -34,10 +34,10 @@ export const fr: Content = {
     kicker: "Chaque appareil, d'accord.",
     headline: "La synchronisation offline-first qui reste correcte quand le réseau ment.",
     subline:
-      "Accord est un moteur de sync open source et auto-hébergé, en développement pour les applis de terrain : les données vivent en SQLite ou IndexedDB, la vérité en PostgreSQL côté serveur, et les répliques fusionnent selon des règles déclarées — pas à la chance.",
+      "Accord est un moteur de sync open source et auto-hébergé pour les applis de terrain : les données vivent en SQLite ou IndexedDB, la vérité en PostgreSQL côté serveur, et les répliques fusionnent selon des règles déclarées — pas à la chance.",
     ctaHow: "Fonctionnement",
     ctaGithub: "GitHub",
-    statusLine: "En développement : pas encore publié. Suivez le projet sur GitHub.",
+    statusLine: "v{version} — première version, {date}. Avant la 1.0 : l'API peut encore changer.",
     scene: {
       labels: {
         devices: ["Appareil A", "Appareil B", "Appareil C"],
@@ -72,8 +72,7 @@ export const fr: Content = {
 
   how: {
     heading: "Fonctionnement",
-    intro:
-      "Le design de la v1, écrit à l'intention. Ces étapes suivent une écriture, d'un appareil vers tous les autres.",
+    intro: "Ces étapes suivent une écriture, d'un appareil vers tous les autres.",
     planned: { label: "À venir", title: "À venir — décrit comme conçu, pas encore construit" },
     steps: [
       {
@@ -132,7 +131,7 @@ export const fr: Content = {
       label: "À venir",
       title: "À venir — les stratégies sont conçues, pas encore construites",
     },
-    note: "Les listes ordonnées (un CRDT de séquence) sont prévues après la v1 — la plupart des listes d'applis de terrain sont des ensembles. Ce tableau sera généré depuis docs/merge-rules.md quand elle existera.",
+    note: "Chaque règle est fixée par des vecteurs de test de référence que toute implémentation doit passer. Les listes ordonnées (un CRDT de séquence) sont prévues après la v1 — la plupart des listes d'applis de terrain sont des ensembles.",
     table: {
       columns: { strategy: "Stratégie", useFor: "Pour quoi", rule: "Règle", example: "Exemple" },
       rows: {
@@ -167,39 +166,40 @@ export const fr: Content = {
   guarantees: {
     heading: "Ce qu'Accord garantit",
     intro:
-      "Seules des garanties prouvées ont leur place ici — un test qui passe dans le dépôt. Rien n'y est encore arrivé : chaque point est à venir, et reliera son test le jour où il deviendra vrai.",
+      "Seules des garanties prouvées ont leur place ici : chacune renvoie au test du dépôt qui la prouve.",
     planned: { label: "À venir", title: "À venir — en attente d'un test qui passe dans le dépôt" },
     whyLabel: "Pourquoi :",
-    sourceLink: { label: "crossben/accordsync — le plan (section 6)" },
+    testLink: "Le test",
+    sourceLink: { label: "Décisions de conception (ADR)" },
     items: {
       convergence: {
         title: "Chaque réplique converge",
-        body: "Après la sync, toutes les répliques sont conçues pour porter un état identique — à prouver par des tests propriétés sous pannes aléatoires.",
+        body: "Après la sync, chaque réplique porte un état identique — vérifié par des milliers d'exécutions générées, messages perdus, retardés, dupliqués et réordonnés.",
         why: "Les jours hors ligne sont normaux ; la divergence, silencieuse.",
       },
       counters: {
         title: "Les compteurs ne perdent jamais d'incrément",
-        body: "Un compteur est conçu pour égaler la somme de tous les incréments jamais faits, quel que soit l'ordre d'arrivée.",
+        body: "Un compteur égale la somme de tous les incréments acceptés par le serveur, quel que soit l'ordre d'arrivée.",
         why: "Les quantités collectées et les stocks doivent tomber juste.",
       },
       conflicts: {
         title: "conflict() n'est jamais résolu automatiquement",
-        body: "Les champs marqués conflict() sont conçus pour afficher les deux valeurs et rester marqués jusqu'à ce que l'appli tranche.",
+        body: "Les champs marqués conflict() affichent toutes les valeurs concurrentes et restent marqués jusqu'à ce que l'appli tranche.",
         why: "Accord ne devine jamais sur l'argent ou le statut légal.",
       },
       idempotent: {
         title: "Rejouer une opération ne change rien",
-        body: "Les opérations sont conçues pour être idempotentes : appliquer deux fois ne change rien, donc renvoyer un lot après une coupure est sans danger.",
+        body: "Les opérations sont idempotentes : appliquer deux fois ne change rien, donc renvoyer un lot après une coupure est sans danger.",
         why: "Les réseaux mobiles coupent en plein lot, tout le temps.",
       },
       resumable: {
         title: "La sync reprend, des jours plus tard",
-        body: "Un appareil hors ligne des jours est conçu pour synchroniser par pages reprises : s'il meurt à la page 7, il reprend à la page 7.",
+        body: "Un appareil hors ligne des jours synchronise par pages reprises : s'il meurt à la page 7, il reprend à la page 7.",
         why: "Les longues coupures sont la raison d'être de l'offline-first.",
       },
       scopes: {
         title: "Les périmètres sont appliqués côté serveur",
-        body: "Le serveur est conçu pour filtrer chaque pull et rejeter chaque opération hors périmètre, en signalant les refus au client.",
+        body: "Le serveur filtre chaque pull et refuse chaque opération hors périmètre ; l'appareil annule le changement refusé et prévient l'appli.",
         why: "Un client qui diverge en silence est un bug de données qui attend.",
       },
     },
@@ -217,16 +217,22 @@ export const fr: Content = {
     },
     copy: "Copier",
     copied: "Copié",
+    screenshot: {
+      alt: "L'exemple d'appli de terrain d'Accord : un dossier où deux agents ont choisi des statuts différents hors ligne. Les visites affichent 3, et un encadré dit « Agents disagree. Accord kept every value. Which one is right? » avec un bouton par valeur.",
+      caption:
+        "L'exemple d'appli de terrain du dépôt, après que deux agents ont modifié le même dossier hors ligne : chaque visite compte, et le statut sur lequel ils divergent attend un humain.",
+      link: "examples/field-app",
+    },
   },
 
   quickstart: {
     heading: "Lancez-le vous-même",
     intro:
-      "Le squelette tourne : un serveur, PostgreSQL, un contrôle de santé. Le quick start du dépôt — un aperçu développeur, pas une version publiée.",
+      "Le quick start du dépôt : PostgreSQL et le serveur de sync dans Docker Compose, avec une configuration d'exemple.",
     steps: [
       {
         title: "Cloner le dépôt",
-        body: "Il est privé pour l'instant.",
+        body: "Le serveur, le client, les exemples et la documentation vivent dans un seul dépôt.",
         commands: ["git clone https://github.com/crossben/accordsync", "cd accordsync"],
       },
       {
@@ -248,7 +254,7 @@ export const fr: Content = {
   proof: {
     heading: "Preuves",
     intro:
-      "La correction est une suite de tests, pas une promesse. Ces preuves sont en construction, d'après le plan (section 6) ; les vrais chiffres arriveront avec la CI.",
+      "La correction est une suite de tests, pas une promesse. Ces suites tournent à chaque changement.",
     planned: { label: "À venir", title: "À venir — les suites de tests sont en construction" },
     items: {
       convergenceTest: {
@@ -264,6 +270,24 @@ export const fr: Content = {
         body: "Un simulateur réseau déterministe — coupure, délai, duplication, réordonnancement, partition. Un échec en CI se rejoue avec la même graine.",
       },
     },
+    testLink: "Les tests",
+    ciLine:
+      "Chaque passage de la CI génère {simulations} réseaux simulés et {propertyCases} cas par loi de stratégie ; un échec affiche la graine qui le rejoue.",
+    load: {
+      heading: "Sous charge",
+      intro:
+        "Des appareils k6 qui envoient des lots de 10 opérations et tirent des pages, sans pause, 60 secondes par mesure. Les envois sont sérialisés exprès, pour qu'un pull ne saute jamais une opération : plus d'appareils attendent plus longtemps, sans ajouter de débit.",
+      columns: {
+        devices: "Appareils",
+        ops: "Opérations/s acceptées",
+        push: "Push p95",
+        pull: "Pull p95",
+      },
+      hardwareLabel: "Mesuré sur :",
+      caveat:
+        "Aucune requête en échec. Une seule machine et une charge synthétique : mesurez sur votre propre installation avant de vous y fier.",
+      link: "Méthode et résultats bruts",
+    },
   },
 
   not: {
@@ -276,7 +300,7 @@ export const fr: Content = {
       },
       collab: {
         title: "Pas de collaboration temps réel sur le texte",
-        body: "Pas d'édition riche partagée dans la v1. Les champs sont des scalaires, des ensembles, des compteurs et des listes de références.",
+        body: "Pas d'édition riche partagée dans la v1. Les champs sont des scalaires, des ensembles et des compteurs.",
       },
       business: {
         title: "Pas de magie pour les conflits métier",
@@ -293,11 +317,11 @@ export const fr: Content = {
     },
     contribute: {
       title: "Contribuer",
-      body: "Les dépôts restent privés pendant les premiers jalons. À l'ouverture, issues et pull requests seront bienvenues ; CONTRIBUTING.md sera relié ici.",
+      body: "Issues et pull requests sont bienvenues. Une graine qui fait échouer la suite de convergence est le meilleur rapport de bug qui soit.",
     },
     security: {
       title: "Sécurité",
-      body: "Les signalements auront un canal privé — SECURITY.md dans le dépôt expliquera comment.",
+      body: "Signalez les vulnérabilités en privé via GitHub. Une liste de contrôle dans la documentation dit ce que le serveur applique et ce que vous configurez.",
     },
     roadmap: {
       title: "Feuille de route",
@@ -307,7 +331,7 @@ export const fr: Content = {
 
   footer: {
     tagline: "Conçu pour les réseaux qui mentent.",
-    statusLine: "En développement : pas encore publié. Suivez le projet sur GitHub.",
+    statusLine: "v{version} — première version, {date}. Avant la 1.0.",
     copyright: "© 2026 Ben Hattab",
     linkLabels: { github: "GitHub", docs: "Docs", changelog: "Changelog", license: "Licence" },
   },

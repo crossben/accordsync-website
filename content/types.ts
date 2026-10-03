@@ -39,7 +39,8 @@ export type Content = {
     subline: string;
     ctaHow: string;
     ctaGithub: string;
-    /** Required status line (website.md section 4): shown in the hero and the footer. */
+    /** Required status line (website.md section 4): shown in the hero and the footer.
+     *  `{version}` and `{date}` come from facts.version. */
     statusLine: string;
     scene: {
       labels: { devices: [string, string, string]; server: string; offline: string };
@@ -101,6 +102,8 @@ export type Content = {
     intro: string;
     planned: PlannedBadge;
     whyLabel: string;
+    /** Label of each guarantee's link to the test that proves it (href from facts.ts). */
+    testLink: string;
     /** Label only: the href comes from facts.repo.planProof (facts.ts owns URLs). */
     sourceLink: { label: string };
     items: Record<GuaranteeKey, { title: string; body: string; why: string }>;
@@ -114,6 +117,8 @@ export type Content = {
     tabLabels: { schema: string; offline: string; conflict: string };
     copy: string;
     copied: string;
+    /** The real field-app screenshot (facts.screenshot), shown when features.screenshots. */
+    screenshot: { alt: string; caption: string; link: string };
   };
 
   /** section 5.9 — rendered only while features.quickstart is true. */
@@ -134,6 +139,19 @@ export type Content = {
       convergenceTest: { title: string; body: string };
       strategyLaws: { title: string; body: string };
       simulator: { title: string; body: string };
+    };
+    /** Label of each proof's link to its test file. */
+    testLink: string;
+    /** CI case counts; `{simulations}` and `{propertyCases}` come from facts.ciRuns. */
+    ciLine: string;
+    /** Load-test table (facts.loadTest), always with its hardware line and caveat. */
+    load: {
+      heading: string;
+      intro: string;
+      columns: { devices: string; ops: string; push: string; pull: string };
+      hardwareLabel: string;
+      caveat: string;
+      link: string;
     };
   };
 

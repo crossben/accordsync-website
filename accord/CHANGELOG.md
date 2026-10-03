@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-10-02
+
+First release.
+
 ### Added
 
 - M1 pure merge core (`@accordsync/core`): hybrid logical clocks with skew refusal, the op
@@ -36,5 +40,21 @@ All notable changes to this project are documented here. The format follows
 - M5 field-app example (`examples/field-app`): two agents edit a dossier offline in two browser
   tabs; counters add up, sets merge, and a status conflict is shown for them to resolve.
 - Server: `cors` option on `defineServer` for browser apps on another origin.
+- M6 log compaction (ADR-0008): records every live device has fully pulled are folded into
+  snapshots; devices retired after `deviceTtlDays` (30) resync when they return; `accord compact`,
+  and hourly compaction under `accord serve`. Clients store snapshots in every storage adapter.
+- Server keeps each record's current state, so push cost no longer grows with history (ADR-0009).
+- Prometheus metrics at `/metrics` (token-protected): push outcomes and batch sizes, pull pages and
+  items, request durations, feed head, live devices, sync lag, ops folded by compaction.
+- Security: request body limit (413), constant-time metrics token check, startup warnings for dev
+  auth and missing issuer/audience; `SECURITY.md` and `docs/security.md`.
+- k6 load test (`load/k6/sync.js`) and published results: about 1 000 ops/s on one laptop, pull
+  p95 ≤ 20 ms, no failed requests up to 200 devices (`load/README.md`).
+- Pushes queue in-process before taking a database connection; `ACCORD_DB_POOL` sets the pool size.
+- Release workflow: a `v*` tag publishes the npm packages (with provenance) and the server image to
+  ghcr.io.
 - M0 skeleton: pnpm monorepo (`core`, `client`, `server`, `simulator`), server health endpoint
   with PostgreSQL migrations, Docker image, Compose file, CI.
+
+[Unreleased]: https://github.com/crossben/accordsync/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/crossben/accordsync/releases/tag/v0.1.0

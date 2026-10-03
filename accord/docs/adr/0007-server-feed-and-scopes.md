@@ -36,4 +36,5 @@ per-device scope differences.
 ## Consequences
 
 - Authorisation is enforced on the server, for every push and every pull.
-- Each push re-reads the history of the records it touches. Compaction bounds that history.
+- Each push re-read the history of the records it touches; [ADR-0009](0009-server-record-state.md)
+  replaced that with a stored per-record state.

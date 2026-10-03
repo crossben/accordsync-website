@@ -16,7 +16,8 @@ const USAGE = `Usage: accord serve   [--config ./accord.config.ts]   run the syn
 
 Environment:
   ACCORD_DATABASE_URL  PostgreSQL connection string (required)
-  ACCORD_PORT          HTTP port (default 8080)`;
+  ACCORD_PORT          HTTP port (default 8080)
+  ACCORD_DB_POOL       PostgreSQL connections (default 20)`;
 
 const { positionals, values } = parseArgs({
   allowPositionals: true,
@@ -43,7 +44,7 @@ if ('hs256Secret' in def.auth) {
   console.warn('accord: using a shared HS256 secret (development). Use jwksUrl in production.');
 }
 const config = loadConfig();
-const db = createDb(config.databaseUrl);
+const db = createDb(config.databaseUrl, config.dbPoolSize);
 await migrateToLatest(db);
 const metrics = createMetrics(db, def);
 

@@ -198,10 +198,94 @@ const FACTS = [
     strings: ["protocolVersion: 1"],
   },
   {
-    id: "status line: in development, not released (app/README.md status note)",
+    id: "version 0.1.0, released 2026-10-02 (facts.version)",
     base: "app",
-    file: "README.md",
-    strings: ["in development, not released"],
+    file: "CHANGELOG.md",
+    strings: ["## [0.1.0] - 2026-10-02"],
+    appSource: { file: "README.md", strings: ["v0.1.0, first release"] },
+  },
+  // Built on 2026-10-02: each guarantee cites the test that proves it (facts.guarantees).
+  {
+    id: "guarantee: every replica converges (built)",
+    base: "app",
+    file: "packages/simulator/src/convergence.test.ts",
+    strings: ["every replica converges, whatever the network does"],
+  },
+  {
+    id: "guarantee: counters never lose an increment (built)",
+    base: "app",
+    file: "packages/simulator/src/convergence.test.ts",
+    strings: ["No lost increments: every counter equals the sum of every increment"],
+  },
+  {
+    id: "guarantee: conflict() is never auto-resolved (built)",
+    base: "app",
+    file: "packages/core/src/laws.test.ts",
+    strings: ["a conflict() field written concurrently is never auto-resolved"],
+  },
+  {
+    id: "guarantee: replayed ops change nothing (built)",
+    base: "app",
+    file: "packages/server/test/sync.test.ts",
+    strings: ["a retried push is acknowledged again and stored once"],
+  },
+  {
+    id: "guarantee: sync resumes in pages (built)",
+    base: "app",
+    file: "packages/server/test/sync.test.ts",
+    strings: ["pages through a long backlog and resumes from its cursor"],
+  },
+  {
+    id: "guarantee: scopes enforced on the server, refused ops rolled back (built)",
+    base: "app",
+    file: "packages/server/test/sync.test.ts",
+    strings: ["refuses writes to someone else's record, with a reason"],
+    appSource: {
+      file: "docs/adr/0006-refused-ops-roll-back.md",
+      strings: ["Refused ops are rolled back on the device that wrote them"],
+    },
+  },
+  {
+    id: "strategies: lww, counter, set, conflict built, with golden vectors (facts.strategies)",
+    base: "app",
+    file: "docs/merge-rules.md",
+    strings: ["| `lww` |", "| `counter` |", "| `set` |", "| `conflict` |"],
+    mustExist: "vectors/conflict.json",
+  },
+  {
+    id: "proof: CI case counts (facts.ciRuns)",
+    base: "app",
+    file: ".github/workflows/ci.yml",
+    strings: ["ACCORD_SIM_RUNS: '3000'", "ACCORD_PROPERTY_RUNS: '2000'"],
+  },
+  {
+    id: "load test numbers and hardware (facts.loadTest)",
+    base: "app",
+    file: "load/README.md",
+    strings: [
+      "Intel Core i7-11800H",
+      "| 50 | 1 004 | 479 ms | 548 ms | 640 ms | 11 ms | 14 ms | 0 % |",
+      "| 100 | 1 033 | 975 ms | 1 049 ms | 1 076 ms | 11 ms | 15 ms | 0 % |",
+      "| 200 | 984 | 1 951 ms | 2 258 ms | 2 463 ms | 13 ms | 20 ms | 0 % |",
+    ],
+  },
+  {
+    id: "security and contributing files (features.repoLinks)",
+    base: "app",
+    file: "SECURITY.md",
+    strings: ["Report a vulnerability"],
+    mustExist: "CONTRIBUTING.md",
+  },
+  {
+    id: "field-app screenshot is a real capture (facts.screenshot)",
+    base: "app",
+    file: "examples/field-app/src/App.tsx",
+    strings: ["Agents disagree.", "Accord kept every value. Which one is right?"],
+    appSource: {
+      file: "examples/field-app/README.md",
+      strings: ["docs/screens/field-app-conflict.png"],
+    },
+    mustExist: "docs/screens/field-app-conflict.png",
   },
 ];
 
@@ -285,27 +369,40 @@ for (const file of COPY_FILES) {
   }
 }
 
-// Version guard (website.md section 4): no version until v0.1.0 is tagged. If the
-// changelog now carries the tag, the "in development" status line is wrong.
+// Version guard (website.md section 4): facts.version must match the latest release heading.
 const changelogPath = join(appDir, "CHANGELOG.md");
+const factsSource = readFileSync(join(websiteRoot, "content/facts.ts"), "utf8");
+const siteVersion = /version = \{ number: "([^"]+)", date: "([^"]+)" \}/.exec(factsSource);
 if (!existsSync(changelogPath)) {
   problems.push(
     `  app/CHANGELOG.md is missing — the version fact (website.md section 4) cites it.`,
   );
+} else if (!siteVersion) {
+  problems.push(`  content/facts.ts: cannot read \`version\` (expected { number, date }).`);
 } else {
-  const changelog = readFileSync(changelogPath, "utf8");
-  const released = /^##\s*\[?v?\d+\.\d+\.\d+\]?/m.test(changelog);
-  const unreleased = /^##\s*\[Unreleased\]/m.test(changelog);
-  if (released) {
+  const latest = /^##\s*\[(\d+\.\d+\.\d+)\]\s*-\s*(\d{4}-\d{2}-\d{2})/m.exec(
+    readFileSync(changelogPath, "utf8"),
+  );
+  if (!latest || latest[1] !== siteVersion[1] || latest[2] !== siteVersion[2]) {
     problems.push(
-      `  app/CHANGELOG.md now contains a release heading: the site's status line and\n` +
-        `  facts.ts still say "in development". Update them in the same PR.`,
+      `  app/CHANGELOG.md's latest release is ${latest ? `${latest[1]} (${latest[2]})` : "missing"},\n` +
+        `  but facts.version says ${siteVersion[1]} (${siteVersion[2]}). Update them in the same PR.`,
     );
-  } else if (!unreleased) {
-    problems.push(
-      `  app/CHANGELOG.md has neither an [Unreleased] section nor a release heading —\n` +
-        `  its structure changed; revisit the version fact (website.md section 4).`,
-    );
+  }
+}
+
+// Load numbers on the site (facts.loadTest.rows) must be the ones in app/load/README.md.
+const loadReadme = normalize(readSource("app", "load/README.md").content ?? "");
+const group = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+for (const m of factsSource.matchAll(
+  /\{ devices: (\d+), opsPerSec: (\d+), pushP95: (\d+), pullP95: (\d+) \}/g,
+)) {
+  const [, devices, ops, push, pull] = m;
+  const row = new RegExp(
+    `\\| ${devices} \\| ${group(ops)} \\| [^|]+ \\| ${group(push)} ms \\| [^|]+ \\| [^|]+ \\| ${pull} ms \\|`,
+  );
+  if (!row.test(loadReadme)) {
+    problems.push(`  facts.loadTest row for ${devices} devices does not match app/load/README.md`);
   }
 }
 

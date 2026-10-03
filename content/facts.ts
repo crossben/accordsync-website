@@ -136,3 +136,14 @@ export const clients = {
   v1: "TypeScript (browser + React Native)",
   planned: "Dart/Flutter client after v1",
 } as const;
+
+/**
+ * The playground (website.md section 5.7). It runs the published packages, so this is a fact about
+ * the website's own dependencies: package.json pins both to the same version as `version.number`,
+ * and check-facts.mjs asserts that pin still matches. Source: website/package.json.
+ */
+export const playground = {
+  core: "@accordsync/core",
+  simulator: "@accordsync/simulator",
+  version: version.number,
+} as const;

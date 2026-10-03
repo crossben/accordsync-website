@@ -112,9 +112,10 @@ curl localhost:8080/health
 
 ## Performance
 
-On one laptop (i7-11800H, PostgreSQL 16 defaults, one server process), Accord accepted about
-**1 000 ops/s** with pulls at p95 ≤ 20 ms, and no failed requests up to 200 devices pushing
-non-stop. Details, hardware and caveats: [load/README.md](load/README.md).
+On one laptop (i7-11800H, PostgreSQL 16 defaults), v0.2 accepted about **3 000 ops/s with 4 server
+processes** (`ACCORD_WORKERS=4`) and about 1 600–1 800 with one, with pulls at p95 ≤ 56 ms and no
+failed requests up to 200 devices pushing non-stop. Details, hardware and caveats:
+[load/README.md](load/README.md).
 
 ## Security
 

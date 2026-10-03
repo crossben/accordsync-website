@@ -108,7 +108,9 @@ function model(all: readonly Op[], record: string) {
 
   const visits = of('visits').reduce((sum, o) => sum + (o.kind === 'inc' ? o.by : 0), 0);
 
-  const removedTags = new Set(of('docs').flatMap((o) => (o.kind === 'remove' ? o.deps : [])));
+  const removedTags = new Set(
+    of('docs').flatMap((o) => (o.kind === 'remove' || o.kind === 'add' ? o.deps : [])),
+  );
   const docs = [
     ...new Set(
       of('docs').flatMap((o) => (o.kind === 'add' && !removedTags.has(o.opId) ? [o.element] : [])),

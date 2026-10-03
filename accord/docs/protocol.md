@@ -34,7 +34,9 @@ A device id is bound to the first user that uses it. Another user presenting it 
 }
 ```
 
-Send the outbox in write order, at most 500 ops per request (configurable). The response:
+Send the outbox **in write order**, at most 500 ops per request (configurable). Never send an op
+numbered below the first op of a push that was already answered: the server relies on this to
+forget old duplicates ([ADR-0010](adr/0010-concurrent-pushes.md)). The response:
 
 ```json
 {
@@ -45,7 +47,7 @@ Send the outbox in write order, at most 500 ops per request (configurable). The 
 
 - **acked**: applied, now or by an earlier attempt. Remove them from the outbox. Resending a batch
   after a dropped connection is always safe: ops are identified by `op_id`.
-- **refused**: never applied, with a reason (out of scope, clock too far ahead, does not fit the
+- **refused**: never applied, with a reason (`op id already used` when this device reused an op id — see `device_seq` below; out of scope, clock too far ahead, does not fit the
   schema, malformed, belongs to another device). Roll them back locally and tell the app
   ([ADR-0006](adr/0006-refused-ops-roll-back.md)).
 
@@ -54,7 +56,7 @@ new record accepts it if the keys it would have after the write overlap them.
 
 ## Pull: `GET /v1/pull?cursor=<n>&limit=<n>`
 
-Start with `cursor=0`. The response:
+Start with `cursor=0`. The cursor is opaque: store it and send it back. The response:
 
 ```json
 {
@@ -63,7 +65,8 @@ Start with `cursor=0`. The response:
     { "type": "exit", "record": "dossier:12" }
   ],
   "cursor": 4812,
-  "has_more": true
+  "has_more": true,
+  "device_seq": 37
 }
 ```
 
@@ -79,7 +82,12 @@ Start with `cursor=0`. The response:
   again. A device that dies mid-way resumes from the last stored cursor; at worst it receives a
   page twice, which is harmless.
 
-If your read scopes changed since your last full pull (new JWT claims), the server answers:
+`device_seq` is the highest op number the server has applied from this device. Number new ops above
+it: a device that lost its storage (a reinstall keeping its device id) must never reuse an op id.
+
+If your read scopes changed since your last pull (new JWT claims), the page starts with the history
+of every record that entered them and an `exit` for every record that left. Only for a very large
+change (or a device back after the retirement TTL) does the server answer:
 
 ```json
 { "resync_required": true }
@@ -91,6 +99,7 @@ Push your outbox, delete local data, and pull again from `cursor=0`.
 
 | Status | Meaning                                                                                      |
 | ------ | -------------------------------------------------------------------------------------------- |
+| `429`  | Rate limit exceeded: wait `Retry-After` seconds, then retry                                  |
 | `400`  | Malformed request: bad JSON, missing `Accord-Device`, an op without an `op_id`, too many ops |
 | `401`  | Missing or invalid token                                                                     |
 | `403`  | The device id belongs to another user                                                        |

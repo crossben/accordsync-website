@@ -11,7 +11,8 @@ export type PullItem =
   | { type: 'exit'; record: string };
 
 export type PullResult =
-  { items: PullItem[]; cursor: number; has_more: boolean } | { resync_required: true };
+  | { items: PullItem[]; cursor: number; has_more: boolean; device_seq?: number }
+  | { resync_required: true };
 
 /** How a client reaches the server. `httpTransport` is the real one; tests can fake it. */
 export interface Transport {

@@ -34,10 +34,15 @@ export interface IncOp extends OpBase {
   readonly by: number;
 }
 
-/** Adds an element to a set. The op id is the element's unique tag. */
+/**
+ * Adds an element to a set. The op id is the element's unique tag. `deps` lists the element's tags
+ * the writer could see: the add replaces them, so re-adding keeps the set's state small, while a
+ * concurrent remove (which only cites the tags it saw) still loses. Empty for a first add.
+ */
 export interface AddOp extends OpBase {
   readonly kind: 'add';
   readonly element: SetElement;
+  readonly deps: readonly OpId[];
 }
 
 /** Removes the add-tags in `deps` (the ones the writer had seen); concurrent adds survive. */

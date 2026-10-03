@@ -28,6 +28,17 @@ export interface ServerDefinition<S extends Schema = Schema> {
    * Omit to disable the endpoint.
    */
   metrics?: { token: string };
+  /**
+   * Sync request limits, per server process (429 with Retry-After when exceeded). Defaults: 600
+   * requests/minute per device, 1 800 per user. `false` disables them (e.g. behind a proxy that
+   * limits already).
+   */
+  rateLimit?:
+    | false
+    | {
+        perDevice?: { perMinute: number; burst?: number };
+        perUser?: { perMinute: number; burst?: number };
+      };
   /** Log compaction (ADR-0005, ADR-0008). */
   compaction?: {
     /** A device unseen this long is retired and no longer holds compaction back (default 30). */
@@ -40,6 +51,13 @@ export interface ServerDefinition<S extends Schema = Schema> {
   limits?: {
     /** Request body size in bytes (default 5 MiB); larger requests get 413. */
     maxBodyBytes?: number;
+    /** Push transactions running at once per process (default 8); keep it below the pool size. */
+    maxConcurrentPushes?: number;
+    /**
+     * When a user's read scopes change, records entering and leaving are sent directly; above this
+     * many records, the device does a full resync instead (default 2000).
+     */
+    maxScopeDelta?: number;
     /** Ops per push request (default 500). */
     maxPushOps?: number;
     /** Items per pull page (default 1000). */

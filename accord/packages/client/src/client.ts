@@ -231,6 +231,8 @@ export class AccordClient {
         await this.#resync();
         continue;
       }
+      // The server's count of this device's ops: never reuse an op id, even after lost storage.
+      if (page.device_seq !== undefined) this.#writer.advanceSeq(page.device_seq);
       await this.#applyPage(page.items, page.cursor);
       if (!page.has_more) break;
     }

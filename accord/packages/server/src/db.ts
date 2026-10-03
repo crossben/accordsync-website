@@ -8,6 +8,8 @@ export interface Database {
   feed: {
     // bigint comes back from pg as a string
     seq: ColumnType<string, never, never>;
+    /** Delivery order: the writing transaction's id, shifted (migration 0005). Set by default. */
+    pos: ColumnType<string, string | undefined, never>;
     kind: 'op' | 'scope' | 'snapshot';
     record: string;
     op_id: string | null;
@@ -18,13 +20,15 @@ export interface Database {
   };
   /** `state` is null for records written before migration 0004 (rebuilt from the feed). */
   records: { record: string; scopes: string[]; state: RecordSnapshot | null };
-  compacted_ops: { op_id: string };
+  compacted_ops: { op_id: string; device: string; op_seq: string };
   devices: {
     device_id: string;
     sub: string;
     read_keys: string[] | null;
     cursor: ColumnType<string, never, string>;
     needs_resync: Generated<boolean>;
+    push_floor: ColumnType<string, never, string>;
+    max_op_seq: ColumnType<string, never, string>;
     first_seen: Generated<Date>;
     last_seen: Generated<Date>;
   };

@@ -24,7 +24,12 @@ export const WireOpSchema = Type.Union(
       { additionalProperties: false },
     ),
     Type.Object(
-      { ...Base, kind: Type.Literal('add'), element: Element },
+      {
+        ...Base,
+        kind: Type.Literal('add'),
+        element: Element,
+        deps: Type.Optional(Type.Array(OpId)),
+      },
       { additionalProperties: false },
     ),
     Type.Object(
@@ -81,6 +86,13 @@ export const PullResponseSchema = Type.Union(
         items: Type.Array(Type.Unsafe<object>({ $ref: 'PullItem' })),
         cursor: Type.Integer({ minimum: 0, description: 'Send it back as ?cursor= next time.' }),
         has_more: Type.Boolean(),
+        device_seq: Type.Optional(
+          Type.Integer({
+            minimum: 0,
+            description:
+              'Highest op number the server applied from this device: number new ops above it (a device that lost its storage must never reuse an op id).',
+          }),
+        ),
       },
       { additionalProperties: false },
     ),
@@ -102,7 +114,8 @@ export type PullItem =
   | { type: 'snapshot'; snapshot: import('@accordsync/core').RecordSnapshot }
   | { type: 'exit'; record: string };
 export type PullResponse =
-  { items: PullItem[]; cursor: number; has_more: boolean } | { resync_required: true };
+  | { items: PullItem[]; cursor: number; has_more: boolean; device_seq?: number }
+  | { resync_required: true };
 
 export const PROTOCOL_SCHEMAS = {
   WireOp: WireOpSchema,

@@ -24,6 +24,8 @@ export default defineServer({
     ? { jwksUrl: process.env.ACCORD_JWKS_URL }
     : { hs256Secret: required('ACCORD_DEV_SECRET') },
   cors: process.env.ACCORD_CORS_ORIGINS?.split(',').filter(Boolean) ?? [],
+  // Rate limits are on by default; benchmarks that push non-stop turn them off.
+  ...(process.env.ACCORD_RATE_LIMIT === 'off' ? { rateLimit: false as const } : {}),
   ...(process.env.ACCORD_METRICS_TOKEN
     ? { metrics: { token: process.env.ACCORD_METRICS_TOKEN } }
     : {}),

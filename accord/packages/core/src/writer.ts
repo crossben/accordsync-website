@@ -1,5 +1,14 @@
 import { assertNode, type Hlc, initialHlc, receiveHlc, tickHlc } from './hlc';
-import type { AddOp, AssignOp, IncOp, JsonValue, Op, RemoveOp, SetElement } from './op';
+import {
+  type AddOp,
+  type AssignOp,
+  type IncOp,
+  type JsonValue,
+  type Op,
+  parseOpId,
+  type RemoveOp,
+  type SetElement,
+} from './op';
 import { type ApplyResult, Replica } from './replica';
 import type { Schema } from './schema';
 
@@ -64,7 +73,8 @@ export class LocalWriter {
 
   add(record: string, field: string, element: SetElement): AddOp {
     assertElement(element);
-    return this.#write({ ...this.#base(record, field), kind: 'add', element });
+    const deps = this.replica.observedDeps(record, field, element);
+    return this.#write({ ...this.#base(record, field), kind: 'add', element, deps });
   }
 
   remove(record: string, field: string, element: SetElement): RemoveOp {
@@ -75,12 +85,31 @@ export class LocalWriter {
 
   /** Applies an op from elsewhere. Refuses it, leaving state untouched, if its clock is absurd. */
   receive(op: Op): ApplyResult {
-    if (this.replica.has(op.opId)) return 'duplicate';
+    if (this.replica.has(op.opId)) {
+      this.advanceSeq(op.opId);
+      return 'duplicate';
+    }
     this.replica.validate(op);
     const next = receiveHlc(this.#hlc, op.hlc, this.#now(), this.#maxSkewMs);
     const result = this.replica.apply(op);
     this.#hlc = next;
+    this.advanceSeq(op.opId);
     return result;
+  }
+
+  /**
+   * Makes sure future op ids come after `seenOrSeq`: an op id of this device (as received from the
+   * server after a reinstall) or a sequence number the server reports. Op ids are never reused.
+   */
+  advanceSeq(seenOrSeq: string | number): void {
+    let seq: number;
+    if (typeof seenOrSeq === 'number') seq = seenOrSeq;
+    else {
+      const id = parseOpId(seenOrSeq);
+      if (id.device !== this.deviceId) return;
+      seq = id.seq;
+    }
+    if (seq > this.#seq) this.#seq = seq;
   }
 
   /**

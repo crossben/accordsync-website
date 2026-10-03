@@ -21,8 +21,9 @@ export const features = {
   snippetsCheckedAgainstApp: true,
 
   /** section 5.7 — the in-browser playground on the real @accordsync/core + simulator.
-   *  Unlock only when milestone M2 lands (convergence suite passing). */
-  playground: false,
+   *  On since M2 (the convergence suite passes): the playground imports the
+   *  published 0.1.0 packages and contains no strategy code of its own. */
+  playground: true,
 
   /** section 5.8 — real proof numbers: CI case counts from app/.github/workflows/ci.yml,
    *  checked by check-facts.mjs. */

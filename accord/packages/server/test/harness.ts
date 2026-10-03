@@ -44,10 +44,13 @@ export const def = defineServer({
   auth: { hs256Secret: SECRET, issuer: 'test-app' },
   limits: { maxPushOps: 100 },
   compaction: { minOps: 2, deviceTtlDays: 30 },
+  rateLimit: false,
 });
 
 export interface Harness {
   db: Db;
+  /** Connection string, for tests that need their own connection. */
+  url: string;
   app: ReturnType<typeof createApp>;
   stop: () => Promise<void>;
   reset: () => Promise<void>;
@@ -61,6 +64,7 @@ export async function startHarness(now: () => number = Date.now): Promise<Harnes
   await migrateToLatest(db);
   return {
     db,
+    url: container.getConnectionUri(),
     app: createApp({ db, def, now }),
     reset: async () => {
       await sql`truncate feed, records, devices restart identity`.execute(db);
@@ -117,6 +121,7 @@ export class TestDevice {
     for (;;) {
       const page = await this.pull(limit);
       if ('resync_required' in page) throw new Error('unexpected resync_required');
+      if (page.device_seq !== undefined) this.writer.advanceSeq(page.device_seq);
       for (const item of page.items) {
         seen.push(item);
         if (item.type === 'op') this.writer.receive(decodeOp(item.op));

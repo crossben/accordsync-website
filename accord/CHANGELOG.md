@@ -6,6 +6,35 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Concurrent pushes (ADR-0010): pushes lock only the records they write; pulls read the feed in
+  transaction order up to the oldest running transaction, so no op is ever skipped.
+- `ACCORD_WORKERS`: several server processes on one port (`auto` = one per CPU).
+- Rate limits per device and per user (`rateLimit` in `defineServer`; 429 with `Retry-After`).
+- A change of read scopes is sent as a delta instead of a full resync (ADR-0011); `limits.maxScopeDelta`.
+- Pull responses carry `device_seq`, the highest op number applied from the device.
+- `load/run.sh` and v0.2 load results: about 3 000 ops/s with 4 workers on the reference laptop.
+
+### Changed
+
+- Sets: re-adding an element replaces the tags its writer saw (`add` ops may carry `deps`), so a
+  set's state no longer grows with repeated adds. Older clients' adds still work.
+- Clients must push their outbox in write order (protocol rule, ADR-0010).
+- The server image installs only the server's dependencies.
+
+### Fixed
+
+- A device that lost its storage and kept its device id could reuse op ids, and its new writes were
+  acknowledged as duplicates and lost. Op counters now advance past the device's own ops and
+  `device_seq`, and a reused id is refused instead of acknowledged.
+
+### Upgrade notes
+
+- Migration 0005 sends every device back to cursor 0 once (`resync_required`), because cursors now
+  count transaction positions.
+- Compacted-op entries are pruned once their device has pushed past them.
+
 ## [0.1.0] - 2026-10-02
 
 First release.

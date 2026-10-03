@@ -1,8 +1,10 @@
 import {
+  canonicalJson,
   decodeOp,
   DEFAULT_MAX_SKEW_MS,
   encodeOp,
   type Op,
+  parseOpId,
   type RecordSnapshot,
   recordType,
   Replica,
@@ -45,16 +47,32 @@ export const FEED_LOCK = 0x4acc0d;
 
 export const DAY_MS = 24 * 3_600_000;
 
-/** Runs tasks one at a time, in arrival order. */
-class Queue {
-  #tail: Promise<unknown> = Promise.resolve();
-  run<T>(task: () => Promise<T>): Promise<T> {
-    const result = this.#tail.then(task);
-    this.#tail = result.catch(() => undefined);
-    return result;
+/** Runs at most `size` tasks at once; the rest wait their turn, in arrival order. */
+class Slots {
+  #free: number;
+  readonly #waiting: (() => void)[] = [];
+  constructor(size: number) {
+    this.#free = size;
+  }
+  async run<T>(task: () => Promise<T>): Promise<T> {
+    if (this.#free > 0) this.#free--;
+    else await new Promise<void>((resolve) => this.#waiting.push(resolve));
+    try {
+      return await task();
+    } finally {
+      const next = this.#waiting.shift();
+      if (next) next();
+      else this.#free++;
+    }
   }
 }
-const pushQueue = new Queue();
+const slotsByDef = new WeakMap<ServerDefinition, Slots>();
+function pushSlots(ctx: SyncContext): Slots {
+  let slots = slotsByDef.get(ctx.def);
+  if (!slots)
+    slotsByDef.set(ctx.def, (slots = new Slots(ctx.def.limits?.maxConcurrentPushes ?? 8)));
+  return slots;
+}
 
 export function deviceTtlMs(def: ServerDefinition): number {
   return (def.compaction?.deviceTtlDays ?? 30) * DAY_MS;
@@ -116,22 +134,59 @@ export async function push(
     byRecord.set(op.record, list);
   }
 
-  // Pushes queue here, in the process, before taking a database connection: waiting on the feed
-  // lock while holding a connection would starve pulls of connections. The advisory lock below
-  // still serializes pushes across several server processes.
-  await pushQueue.run(() =>
+  // Pushes run concurrently. Each takes the feed lock in shared mode (only compaction takes it
+  // exclusively) and locks the rows of the records it writes, in sorted order so two pushes can
+  // never deadlock. Pulls stay correct because they read the feed in transaction order and only up
+  // to the oldest transaction still running (ADR-0010). A limit per process keeps connections free
+  // for pulls.
+  await pushSlots(ctx).run(() =>
     ctx.db.transaction().execute(async (trx) => {
-      await sql`select pg_advisory_xact_lock(${FEED_LOCK})`.execute(trx);
+      await sql`select pg_advisory_xact_lock_shared(${FEED_LOCK})`.execute(trx);
+      // Op numbers this device already used (read once: within a batch, ops apply out of order).
+      const usedUpTo = Number(
+        (
+          await trx
+            .selectFrom('devices')
+            .select('max_op_seq')
+            .where('device_id', '=', caller.deviceId)
+            .executeTakeFirst()
+        )?.max_op_seq ?? 0,
+      );
+      let maxApplied = 0;
       const now = ctx.now();
+      const records = [...byRecord.keys()].sort();
 
-      for (const record of [...byRecord.keys()].sort()) {
-        const existing = await trx
-          .selectFrom('records')
-          .select(['scopes', 'state'])
-          .where('record', '=', record)
-          .executeTakeFirst();
+      // Create missing record rows, so every record can be locked; a row created here and left
+      // unused (every op refused) is removed again below.
+      const created = new Set(
+        records.length === 0
+          ? []
+          : (
+              await trx
+                .insertInto('records')
+                .values(records.map((record) => ({ record, scopes: [], state: null })))
+                .onConflict((oc) => oc.column('record').doNothing())
+                .returning('record')
+                .execute()
+            ).map((r) => r.record),
+      );
+      const locked = new Map(
+        (
+          await trx
+            .selectFrom('records')
+            .select(['record', 'scopes', 'state'])
+            .where('record', 'in', records.length ? records : [''])
+            .orderBy('record')
+            .forUpdate()
+            .execute()
+        ).map((r) => [r.record, r]),
+      );
+
+      for (const record of records) {
+        const isNew = created.has(record);
+        const existing = locked.get(record)!;
         let replica: Replica;
-        if (existing?.state) {
+        if (existing.state) {
           replica = new Replica(ctx.def.schema);
           replica.loadSnapshot(existing.state);
         } else {
@@ -141,24 +196,49 @@ export async function push(
         const pending = byRecord.get(record)!;
         const ids = pending.map((o) => o.opId);
         // Already applied (in the feed) or folded by compaction: acknowledge, never apply twice.
-        const seen = new Set(
-          [
-            ...(await trx.selectFrom('feed').select('op_id').where('op_id', 'in', ids).execute()),
-            ...(await trx
+        // Checked after taking the record lock, so a concurrent retry of the same op is seen.
+        // An id already in the feed is a retry only if it is the same op; the same id with other
+        // content means the device reused an id (lost storage) and must be refused, not dropped.
+        const stored = new Map(
+          (
+            await trx.selectFrom('feed').select(['op_id', 'op']).where('op_id', 'in', ids).execute()
+          ).map((r) => [r.op_id!, canonicalJson(r.op)]),
+        );
+        const compacted = new Set(
+          (
+            await trx
               .selectFrom('compacted_ops')
               .select('op_id')
               .where('op_id', 'in', ids)
-              .execute()),
-          ].map((r) => r.op_id!),
+              .execute()
+          ).map((r) => r.op_id),
         );
-        let scopes: string[] | null = existing?.scopes ?? null;
+        let scopes: string[] | null = isNew ? null : existing.scopes;
         let changed = false;
         const rows: Insertable<Database['feed']>[] = [];
 
         for (const op of pending) {
-          if (seen.has(op.opId) || replica.has(op.opId)) {
+          const previous = stored.get(op.opId);
+          if (previous !== undefined && previous !== canonicalJson(encodeOp(op))) {
+            refused.push({
+              op_id: op.opId,
+              reason: `op id already used: ${op.opId} names another op`,
+            });
+            continue;
+          }
+          if (previous !== undefined || compacted.has(op.opId) || replica.has(op.opId)) {
             duplicates++;
             acked.push(op.opId); // a retried push: already applied
+            continue;
+          }
+          const opSeq = parseOpId(op.opId).seq;
+          if (opSeq <= usedUpTo) {
+            // Not a retry (that would be in the feed): the device reused an op id, typically after
+            // losing its storage. Refuse it loudly rather than acknowledge it as a duplicate.
+            refused.push({
+              op_id: op.opId,
+              reason: `op id already used: this device's ops are numbered above ${usedUpTo}`,
+            });
             continue;
           }
           const reason = check(ctx, caller, replica, scopes, op, now, maxSkewMs);
@@ -198,17 +278,42 @@ export async function push(
           scopes = next;
           changed = true;
           acked.push(op.opId);
+          maxApplied = Math.max(maxApplied, opSeq);
         }
         if (changed) {
-          // One insert per record: rows get their seq in this order.
+          // One insert per record: rows keep this order (same transaction, increasing seq).
           await trx.insertInto('feed').values(rows).execute();
-          const state = JSON.stringify(replica.snapshotRecord(record)) as never;
           await trx
-            .insertInto('records')
-            .values({ record, scopes: scopes!, state })
-            .onConflict((oc) => oc.column('record').doUpdateSet({ scopes: scopes!, state }))
+            .updateTable('records')
+            .set({
+              scopes: scopes!,
+              state: JSON.stringify(replica.snapshotRecord(record)) as never,
+            })
+            .where('record', '=', record)
             .execute();
+        } else if (isNew) {
+          await trx.deleteFrom('records').where('record', '=', record).execute();
         }
+      }
+
+      // The device has its answers for every op below the first one it sent now (clients push
+      // their outbox in order): compacted-op entries below that can be forgotten.
+      const seqs = raw
+        .map((r) => (r as { op_id?: unknown } | null)?.op_id)
+        .filter(
+          (id): id is string => typeof id === 'string' && id.startsWith(`${caller.deviceId}:`),
+        )
+        .map((id) => Number(id.slice(caller.deviceId.length + 1)))
+        .filter(Number.isSafeInteger);
+      if (seqs.length > 0) {
+        await trx
+          .updateTable('devices')
+          .set({
+            push_floor: sql`greatest(push_floor, ${Math.min(...seqs)})` as never,
+            max_op_seq: sql`greatest(max_op_seq, ${maxApplied})` as never,
+          })
+          .where('device_id', '=', caller.deviceId)
+          .execute();
       }
     }),
   );
@@ -269,12 +374,33 @@ export async function pull(
     .execute(async (trx): Promise<PullResponse> => {
       const device = await trx
         .selectFrom('devices')
-        .select(['read_keys', 'needs_resync'])
+        .select(['read_keys', 'needs_resync', 'max_op_seq'])
         .where('device_id', '=', caller.deviceId)
         .executeTakeFirstOrThrow();
-      if (cursor > 0 && (device.needs_resync || !sameKeys(device.read_keys ?? [], read))) {
+      if (cursor > 0 && device.needs_resync) {
         ctx.metrics?.pulls.inc({ result: 'resync_required' });
         return { resync_required: true };
+      }
+      // Read scopes changed (new claims): send what entered and what left, instead of everything.
+      const before = device.read_keys ?? [];
+      const keysChanged = cursor > 0 && !sameKeys(before, read);
+      let delta: { history: { kind: string; op: unknown }[]; exits: string[] } | undefined;
+      if (keysChanged) {
+        delta = await scopeDelta(
+          trx as unknown as Db,
+          before,
+          read,
+          ctx.def.limits?.maxScopeDelta ?? 2000,
+        );
+        if (!delta) {
+          ctx.metrics?.pulls.inc({ result: 'resync_required' });
+          return { resync_required: true };
+        }
+        await trx
+          .updateTable('devices')
+          .set({ read_keys: read })
+          .where('device_id', '=', caller.deviceId)
+          .execute();
       }
       // The device has applied everything up to `cursor`: compaction may fold ops below it.
       await trx
@@ -287,23 +413,42 @@ export async function pull(
         .where('device_id', '=', caller.deviceId)
         .execute();
 
-      const { head } = await trx
+      // Rows from transactions older than every transaction still running are final: nothing can
+      // ever be inserted below this horizon (ADR-0010).
+      const horizon = (await sql<{ h: string }>`select accord_horizon() as h`.execute(trx)).rows[0]!
+        .h;
+      const visible = sql<boolean>`((kind in ('op', 'snapshot') and scopes && ${read}::text[])
+            or (kind = 'scope' and (scopes_before && ${read}::text[]) <> (scopes && ${read}::text[])))`;
+      const fetched = await trx
         .selectFrom('feed')
-        .select(sql<string>`coalesce(max(seq), 0)`.as('head'))
-        .executeTakeFirstOrThrow();
-      const rows = await trx
-        .selectFrom('feed')
-        .select(['seq', 'kind', 'record', 'op', 'scopes', 'scopes_before'])
-        .where('seq', '>', String(cursor) as never)
-        .where('seq', '<=', head as never)
-        .where(
-          // Wrapped in parentheses: Kysely ANDs this with the seq bounds above.
-          sql<boolean>`((kind in ('op', 'snapshot') and scopes && ${read}::text[])
-            or (kind = 'scope' and (scopes_before && ${read}::text[]) <> (scopes && ${read}::text[])))`,
-        )
+        .select(['seq', 'pos', 'kind', 'record', 'op', 'scopes', 'scopes_before'])
+        .where('pos', '>', String(cursor) as never)
+        .where('pos', '<', horizon as never)
+        // Wrapped in parentheses: Kysely ANDs this with the bounds above.
+        .where(visible)
+        .orderBy('pos')
         .orderBy('seq')
-        .limit(limit)
+        .limit(limit + 1)
         .execute();
+
+      // A page ends on a transaction boundary, because the cursor is a transaction position. If one
+      // transaction alone is bigger than a page, it is sent whole.
+      let rows = fetched;
+      let full = false;
+      if (fetched.length > limit) {
+        full = true;
+        const lastPos = fetched[limit]!.pos;
+        rows = fetched.slice(0, limit).filter((r) => r.pos !== lastPos);
+        if (rows.length === 0) {
+          rows = await trx
+            .selectFrom('feed')
+            .select(['seq', 'pos', 'kind', 'record', 'op', 'scopes', 'scopes_before'])
+            .where('pos', '=', lastPos as never)
+            .where(visible)
+            .orderBy('seq')
+            .execute();
+        }
+      }
 
       const items: PullItem[] = [];
       const sent = new Set<string>();
@@ -317,6 +462,10 @@ export async function pull(
         sent.add(op.op_id);
         items.push({ type: 'op', op });
       };
+      if (delta) {
+        for (const h of delta.history) send(h);
+        for (const record of delta.exits) items.push({ type: 'exit', record });
+      }
       for (const row of rows) {
         if (row.kind === 'op' || row.kind === 'snapshot') {
           send(row);
@@ -329,7 +478,8 @@ export async function pull(
             .select(['kind', 'op'])
             .where('record', '=', row.record)
             .where('kind', 'in', ['op', 'snapshot'])
-            .where('seq', '<', row.seq as never)
+            .where(sql<boolean>`(pos, seq) < (${row.pos}::bigint, ${row.seq}::bigint)`)
+            .orderBy('pos')
             .orderBy('seq')
             .execute();
           for (const h of history) send(h);
@@ -338,12 +488,64 @@ export async function pull(
         }
       }
 
-      const full = rows.length === limit;
-      const next = full ? Number(rows[rows.length - 1]!.seq) : Number(head);
+      // A full page ends at its last transaction; otherwise everything below the horizon was read.
+      const next = full ? Number(rows[rows.length - 1]!.pos) : Number(horizon) - 1;
       ctx.metrics?.pulls.inc({ result: 'page' });
       ctx.metrics?.pullItems.inc(items.length);
-      return { items, cursor: Math.max(cursor, next), has_more: full && next < Number(head) };
+      return {
+        items,
+        cursor: Math.max(cursor, next),
+        has_more: full,
+        device_seq: Number(device.max_op_seq),
+      };
     });
+}
+
+/**
+ * What a change of read keys means for a device: the history of every record now visible that was
+ * not visible before, and an exit for every record no longer visible at all. Computed from current
+ * scopes, so a record that moved since the device's cursor is still right; extra history or a
+ * repeated exit later in the feed is harmless (ops are idempotent). `undefined` when the change
+ * touches more than `max` records: a full resync is cheaper then.
+ */
+async function scopeDelta(
+  db: Db,
+  before: readonly string[],
+  after: readonly string[],
+  max: number,
+): Promise<{ history: { kind: string; op: unknown }[]; exits: string[] } | undefined> {
+  const was = [...before];
+  const now = [...after];
+  const entering = await db
+    .selectFrom('records')
+    .select('record')
+    .where(sql<boolean>`scopes && ${now}::text[] and not (scopes && ${was}::text[])`)
+    .limit(max + 1)
+    .execute();
+  const leaving = await db
+    .selectFrom('records')
+    .select('record')
+    .where(sql<boolean>`scopes && ${was}::text[] and not (scopes && ${now}::text[])`)
+    .limit(max + 1)
+    .execute();
+  if (entering.length + leaving.length > max) return undefined;
+  const history =
+    entering.length === 0
+      ? []
+      : await db
+          .selectFrom('feed')
+          .select(['kind', 'op'])
+          .where(
+            'record',
+            'in',
+            entering.map((r) => r.record),
+          )
+          .where('kind', 'in', ['op', 'snapshot'])
+          .orderBy('record')
+          .orderBy('pos')
+          .orderBy('seq')
+          .execute();
+  return { history, exits: leaving.map((r) => r.record) };
 }
 
 /** A record's state on the server: its latest snapshot, then the ops after it. */
@@ -354,6 +556,7 @@ export async function loadRecord(db: Db, def: ServerDefinition, record: string):
     .select(['kind', 'op'])
     .where('record', '=', record)
     .where('kind', 'in', ['op', 'snapshot'])
+    .orderBy('pos')
     .orderBy('seq')
     .execute();
   for (const row of rows) {

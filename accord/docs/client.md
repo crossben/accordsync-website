@@ -81,5 +81,9 @@ transaction.
    (except edits not yet pushed, which are pushed, refused and rolled back like any refused write).
 3. On `resync_required`, push again, keep only unpushed edits, and pull from zero.
 
+Leave `deviceId` unset unless you have a reason: the client generates a random id and stores it. If
+you pass a fixed id and the app's storage is wiped, writes made before the next sync are refused
+(reported through `refused`), because their op ids were already used.
+
 The device id, cursor, clock and op counter are stored, so a restarted app continues where it
 stopped and never reuses an op id.

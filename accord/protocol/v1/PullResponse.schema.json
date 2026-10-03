@@ -24,6 +24,11 @@
         },
         "has_more": {
           "type": "boolean"
+        },
+        "device_seq": {
+          "minimum": 0,
+          "description": "Highest op number the server applied from this device: number new ops above it (a device that lost its storage must never reuse an op id).",
+          "type": "integer"
         }
       }
     },

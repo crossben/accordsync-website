@@ -48,6 +48,10 @@ export function applyOp(state: FieldState, op: Op): void {
       return;
     case 'set':
       if (op.kind === 'add') {
+        for (const tag of op.deps) {
+          state.removed.add(tag);
+          state.tags.delete(tag);
+        }
         if (!state.removed.has(op.opId)) state.tags.set(op.opId, op.element);
         return;
       }

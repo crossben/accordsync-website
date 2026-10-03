@@ -3,7 +3,7 @@ FROM node:24-alpine AS build
 RUN corepack enable
 WORKDIR /repo
 COPY . .
-RUN pnpm install --frozen-lockfile \
+RUN pnpm install --frozen-lockfile --filter "@accordsync/server..." \
  && pnpm --filter "@accordsync/server..." run build \
  && pnpm --filter @accordsync/server deploy --legacy --prod /out
 

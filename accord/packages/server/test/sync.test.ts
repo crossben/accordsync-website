@@ -1,4 +1,4 @@
-import { encodeOp, LocalWriter } from '@accordsync/core';
+import { encodeOp, LocalWriter, parseOpId } from '@accordsync/core';
 import { sql } from 'kysely';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { loadRecord } from '../src/sync';
@@ -128,12 +128,13 @@ describe('sync over HTTP, against real PostgreSQL', () => {
     expect(bob.writer.replica.read('dossier:5')).toMatchObject({ agent: 'alice', zone: 'thies' });
   });
 
-  it('asks for a resync when the read scopes change, and serves a fresh pull', async () => {
+  it('serves a changed-scope pull without a resync, and a fresh pull from zero', async () => {
     alice.writer.assign('dossier:1', 'agent', 'alice');
     await alice.push(ops(alice));
     await alice.pullAll();
     alice.jwt = await token('alice', { zones: ['dakar', 'thies'] });
-    expect(await alice.pull()).toEqual({ resync_required: true });
+    // A small change of scopes is sent as a delta, not a resync (see scopes.test.ts).
+    expect('items' in (await alice.pull())).toBe(true);
     const fresh = await alice.pull(500, 0);
     expect('items' in fresh && fresh.items.length).toBe(1);
   });
@@ -215,7 +216,10 @@ describe('sync over HTTP, against real PostgreSQL', () => {
     let done = false;
     const pushing = Promise.all(
       writers.map(async (w) => {
-        const all = w.writer.replica.ops();
+        // In write order, as a real client pushes its outbox (ops() sorts ids as strings).
+        const all = w.writer.replica
+          .ops()
+          .sort((a, b) => parseOpId(a.opId).seq - parseOpId(b.opId).seq);
         for (let k = 0; k < all.length; k += 3) await w.push(all.slice(k, k + 3));
       }),
     ).then(() => (done = true));

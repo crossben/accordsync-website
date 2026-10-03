@@ -72,12 +72,12 @@ export function createMetrics(db: Db, def: ServerDefinition) {
   });
   new Gauge({
     name: 'accord_sync_lag',
-    help: 'Feed positions between the head and the slowest live device (what compaction waits for)',
+    help: 'Feed positions between the newest final position and the slowest live device (what compaction waits for)',
     registers: [registry],
     async collect() {
-      const r = await sql<{ lag: string }>`select coalesce(max(seq), 0) - coalesce(
+      const r = await sql<{ lag: string }>`select greatest(0, (accord_horizon() - 1) - coalesce(
           (select min(cursor) from devices where last_seen > now() - make_interval(secs => ${ttlSecs})),
-          coalesce(max(seq), 0)) as lag from feed`.execute(db);
+          accord_horizon() - 1)) as lag`.execute(db);
       this.set(Number(r.rows[0]?.lag ?? 0));
     },
   });

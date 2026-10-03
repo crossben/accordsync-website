@@ -149,4 +149,30 @@ describe('LocalWriter', () => {
     expect(a.replica.read('dossier:2')?.status).toEqual({ value: 'approved' });
     expect(a.inc('dossier:1', 'visits', 1).opId).toBe('a:4'); // op ids are never reused
   });
+
+  it('never reuses an op id after receiving its own old ops (fresh storage, same device id)', () => {
+    const before = device('a');
+    const old = [before.inc('dossier:1', 'visits', 1), before.inc('dossier:1', 'visits', 2)];
+    const reinstalled = device('a'); // same device id, empty storage: counter starts at 0
+    for (const op of old) reinstalled.receive(op);
+    const next = reinstalled.inc('dossier:1', 'visits', 4);
+    expect(next.opId).toBe('a:3');
+    expect(reinstalled.replica.read('dossier:1')?.visits).toBe(7);
+  });
+
+  it('sets: re-adding a present element replaces the tags its writer saw (state stays small)', () => {
+    const a = device('a');
+    const b = device('b');
+    for (let i = 0; i < 50; i++) a.add('dossier:1', 'documents', 'cni.pdf');
+    const tags = (r: typeof a) => r.replica.observedDeps('dossier:1', 'documents', 'cni.pdf');
+    expect(tags(a)).toHaveLength(1);
+    // Still add-wins: a remove concurrent with a re-add loses.
+    for (const op of a.replica.ops()) b.receive(op);
+    const remove = b.remove('dossier:1', 'documents', 'cni.pdf');
+    const readd = a.add('dossier:1', 'documents', 'cni.pdf');
+    a.receive(remove);
+    b.receive(readd);
+    expect(a.replica.read('dossier:1')?.documents).toEqual(['cni.pdf']);
+    expect(b.replica.read('dossier:1')?.documents).toEqual(['cni.pdf']);
+  });
 });

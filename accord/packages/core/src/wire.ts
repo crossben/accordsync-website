@@ -5,7 +5,7 @@ import { type JsonValue, type Op, parseOpId, recordType } from './op';
 export type WireOp =
   | (WireBase & { kind: 'assign'; value: JsonValue; deps: string[] })
   | (WireBase & { kind: 'inc'; by: number })
-  | (WireBase & { kind: 'add'; element: string | number })
+  | (WireBase & { kind: 'add'; element: string | number; deps?: string[] })
   | (WireBase & { kind: 'remove'; element: string | number; deps: string[] });
 
 interface WireBase {
@@ -23,7 +23,10 @@ export function encodeOp(op: Op): WireOp {
     case 'inc':
       return { ...base, kind: op.kind, by: op.by };
     case 'add':
-      return { ...base, kind: op.kind, element: op.element };
+      // `deps` is omitted when empty, so first adds keep the v0.1 wire shape.
+      return op.deps.length > 0
+        ? { ...base, kind: op.kind, element: op.element, deps: [...op.deps] }
+        : { ...base, kind: op.kind, element: op.element };
     case 'remove':
       return { ...base, kind: op.kind, element: op.element, deps: [...op.deps] };
   }
@@ -50,7 +53,7 @@ export function decodeOp(input: unknown): Op {
       if (!Number.isSafeInteger(o.by)) throw new Error('inc needs an integer "by"');
       return { ...base, kind: 'inc', by: o.by as number };
     case 'add':
-      return { ...base, kind: 'add', element: element(o) };
+      return { ...base, kind: 'add', element: element(o), deps: 'deps' in o ? deps(o) : [] };
     case 'remove':
       return { ...base, kind: 'remove', element: element(o), deps: deps(o) };
     default:

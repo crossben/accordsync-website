@@ -9,6 +9,7 @@ import { AuthError, createVerifier } from './auth';
 import type { Db } from './db';
 import type { ServerDefinition } from './define';
 import { createMetrics, type Metrics } from './metrics';
+import { RateLimiter } from './ratelimit';
 import { PushRequestSchema } from './protocol';
 import {
   BadRequest,
@@ -62,6 +63,10 @@ export function createApp(deps: AppDeps): Hono {
     if (err instanceof AuthError) return c.json({ error: err.message }, 401);
     if (err instanceof Forbidden) return c.json({ error: err.message }, 403);
     if (err instanceof BadRequest) return c.json({ error: err.message }, 400);
+    if (err instanceof TooManyRequests) {
+      c.header('Retry-After', String(Math.ceil(err.retryAfterMs / 1000)));
+      return c.json({ error: 'too many requests' }, 429);
+    }
     console.error(err);
     return c.json({ error: 'internal error' }, 500);
   });
@@ -95,6 +100,15 @@ export function createApp(deps: AppDeps): Hono {
     });
   }
 
+  const limits = deps.def.rateLimit === false ? undefined : deps.def.rateLimit;
+  const limiters =
+    deps.def.rateLimit === false
+      ? undefined
+      : {
+          device: new RateLimiter(limits?.perDevice ?? { perMinute: 600 }, ctx.now),
+          user: new RateLimiter(limits?.perUser ?? { perMinute: 1800 }, ctx.now),
+        };
+
   const caller = async (c: Context): Promise<Caller> => {
     const claims = await verify(c.req.header('Authorization'));
     const deviceId = c.req.header('Accord-Device') ?? '';
@@ -102,6 +116,10 @@ export function createApp(deps: AppDeps): Hono {
       assertNode(deviceId);
     } catch {
       throw new BadRequest('Accord-Device header must be a device id ([A-Za-z0-9_-]{1,64})');
+    }
+    if (limiters) {
+      const wait = Math.max(limiters.device.take(deviceId), limiters.user.take(claims.sub));
+      if (wait > 0) throw new TooManyRequests(wait);
     }
     const access = deps.def.access(claims);
     const who: Caller = { sub: claims.sub, deviceId, read: access.read, write: access.write };
@@ -138,4 +156,11 @@ function sameSecret(given: string, expected: string): boolean {
   const a = Buffer.from(given);
   const b = Buffer.from(expected);
   return a.length === b.length && timingSafeEqual(a, b);
+}
+
+class TooManyRequests extends Error {
+  override readonly name = 'TooManyRequests';
+  constructor(readonly retryAfterMs: number) {
+    super('too many requests');
+  }
 }

@@ -209,7 +209,7 @@ describe('clients and server, end to end', () => {
     expect(fatou.read('dossier:3')).toMatchObject({ agent: 'fatou', visits: 4 });
   });
 
-  it('resyncs when read scopes change, keeping unpushed edits', async () => {
+  it('follows a change of read scopes without a resync, keeping unpushed edits', async () => {
     const fatou = await open('fatou', 'fatou-phone');
     await fatou.assign('dossier:8', 'zone', 'thies');
     await fatou.sync();
@@ -224,7 +224,7 @@ describe('clients and server, end to end', () => {
     let resyncs = 0;
     awa.on('resync', () => resyncs++);
     await awa.sync();
-    expect(resyncs).toBe(1);
+    expect(resyncs).toBe(0); // a small scope change arrives as a delta (ADR-0011)
     expect(awa.records()).toEqual(['dossier:1', 'dossier:8']);
     expect(awa.read('dossier:8')).toMatchObject({ zone: 'thies', visits: 1 });
     await fatou.sync();
@@ -239,11 +239,13 @@ describe('clients and server, end to end', () => {
     await first.assign('dossier:1', 'zone', 'dakar');
     await first.sync();
     await first.inc('dossier:1', 'visits', 1); // offline, then the app is killed
+    const cursorBefore = first.status().cursor;
+    expect(cursorBefore).toBeGreaterThan(0);
     await first.close();
 
     const again = await open('awa', 'other-id', new SqliteStorage(nodeSqlite(file)));
     expect(again.deviceId).toBe('awa-tablet');
-    expect(again.status()).toMatchObject({ pending: 1, cursor: 2 });
+    expect(again.status()).toMatchObject({ pending: 1, cursor: cursorBefore });
     expect(again.read('dossier:1')?.visits).toBe(1);
     const next = await again.inc('dossier:1', 'visits', 1);
     expect(next.opId).toBe('awa-tablet:3'); // never reuses an op id
@@ -332,6 +334,33 @@ describe('clients and server, end to end', () => {
     });
     await awa.sync();
     expect(awa.read('dossier:1')?.visits).toBe(14);
+  });
+
+  it('a device that lost its storage keeps its old ops and never reuses an op id', async () => {
+    const before = await open('awa', 'x', new MemoryStorage(), { deviceId: 'awa-tablet' });
+    await before.assign('dossier:1', 'zone', 'dakar');
+    await before.inc('dossier:1', 'visits', 2);
+    await before.sync();
+    // Reinstalled: empty storage, same device id. Its first sync teaches it its own op numbers.
+    const after = await open('awa', 'x', new MemoryStorage(), { deviceId: 'awa-tablet' });
+    await after.sync();
+    const op = await after.inc('dossier:1', 'visits', 3);
+    expect(op.opId).toBe('awa-tablet:3');
+    await after.sync();
+    expect(after.status().pending).toBe(0);
+    expect(after.read('dossier:1')?.visits).toBe(5);
+  });
+
+  it('a reinstalled device that writes before its first sync gets a refusal, never a silent loss', async () => {
+    const before = await open('awa', 'x', new MemoryStorage(), { deviceId: 'awa-old' });
+    await before.assign('dossier:1', 'zone', 'dakar');
+    await before.sync();
+    const after = await open('awa', 'x', new MemoryStorage(), { deviceId: 'awa-old' });
+    const refusals: Refusal[] = [];
+    after.on('refused', (r) => refusals.push(r));
+    await after.inc('dossier:1', 'visits', 1); // offline write, numbered 1 again
+    await after.sync();
+    expect(refusals[0]?.reason).toMatch(/op id already used/);
   });
 
   it('syncs in the background, and backs off while the server is unreachable', async () => {

@@ -23,6 +23,7 @@ export const fr: Content = {
       merges: "Règles de fusion",
       guarantees: "Garanties",
       code: "Votre code",
+      playground: "Essayer",
       proof: "Preuves",
       run: "Lancer",
       openSource: "Open source",
@@ -228,27 +229,70 @@ export const fr: Content = {
   quickstart: {
     heading: "Lancez-le vous-même",
     intro:
-      "Le quick start du dépôt : PostgreSQL et le serveur de sync dans Docker Compose, avec une configuration d'exemple.",
+      "Une commande crée un projet qui fonctionne, à partir des paquets publiés : un schéma, une configuration serveur, PostgreSQL dans Docker Compose et un client.",
     steps: [
       {
-        title: "Cloner le dépôt",
-        body: "Le serveur, le client, les exemples et la documentation vivent dans un seul dépôt.",
-        commands: ["git clone https://github.com/crossben/accordsync", "cd accordsync"],
+        title: "Créer un projet",
+        body: "Node 22.18 ou plus récent, et Docker.",
+        commands: ["npm create accord my-app", "cd my-app", "npm install"],
       },
       {
         title: "Démarrer PostgreSQL et le serveur",
-        body: "Docker Compose construit l'image et lance les deux.",
-        commands: ["docker compose up --build"],
+        body: "Le fichier Compose du projet lance PostgreSQL ; le serveur tourne depuis npm.",
+        commands: ["docker compose up -d", "cp .env.example .env", "npm run server"],
       },
       {
-        title: "Vérifier la santé",
-        body: "Le serveur répond avec la version du protocole qu'il parle.",
-        commands: ["curl localhost:8080/health"],
+        title: "Lancer un appareil",
+        body: "Dans un autre terminal : le client d'exemple écrit quatre changements hors ligne, puis synchronise.",
+        commands: ["npm run client"],
       },
     ],
-    note: "Node 22.12+ et pnpm 11 pour développer sur Accord ; les tests du serveur démarrent PostgreSQL 16 avec Testcontainers.",
+    note: "Pour travailler sur Accord lui-même (pnpm, les suites de tests), voir le README du dépôt.",
     terminalLabel: "Terminal",
-    terminalNote: "Commandes réelles et vraie réponse de santé — tirées du test du endpoint.",
+    terminalNote:
+      "Commandes réelles ; la dernière ligne est ce qu'affiche le client d'exemple après la sync.",
+  },
+
+  playground: {
+    heading: "Essayer",
+    intro:
+      "Trois appareils et un serveur, avec les vrais @accordsync/core et simulateur, dans votre navigateur ; aucun serveur n'est sollicité. Mettez un appareil hors ligne, modifiez le même dossier sur deux d'entre eux, puis reconnectez-les.",
+    noscript:
+      "Le bac à sable a besoin de JavaScript. L'exemple d'appli de terrain du dépôt montre la même chose avec un vrai serveur.",
+    loading: "Chargement du bac à sable…",
+    device: "Appareil",
+    server: "Serveur",
+    online: "En ligne",
+    offline: "Hors ligne",
+    unsynced: "{n} non synchronisé(s)",
+    opsOnServer: "{n} opérations au journal",
+    fields: { name: "Client", visits: "Visites", documents: "Documents", status: "Statut" },
+    actions: {
+      visit: "+1 visite",
+      rename: "Renommer",
+      addDoc: "Ajouter cni.pdf",
+      removeDoc: "Retirer cni.pdf",
+      approve: "Approuver",
+      reject: "Rejeter",
+      keep: "Garder « {value} »",
+    },
+    none: "—",
+    outcome: {
+      waiting:
+        "Des appareils sont hors ligne ou ont des changements non synchronisés : les répliques peuvent différer jusqu'à la sync.",
+      identical: "Toutes les répliques sont identiques.",
+      conflicted:
+        "Statut en conflit : {values}. Accord a gardé chaque valeur : votre appli tranche.",
+    },
+    faults: {
+      run: "Pannes aléatoires",
+      rerun: "Rejouer la graine {seed}",
+      reset: "Réinitialiser",
+      result:
+        "Graine {seed} : {ops} écritures sur 3 appareils, {dropped} messages perdus, {duplicated} dupliqués, {partitions} coupures. Une fois le réseau rétabli : {verdict}",
+      diverged: "les répliques diffèrent. Cela ne devrait jamais arriver : signalez la graine.",
+    },
+    announce: { online: "{device} est en ligne.", offline: "{device} est hors ligne." },
   },
 
   proof: {
@@ -276,9 +320,10 @@ export const fr: Content = {
     load: {
       heading: "Sous charge",
       intro:
-        "Des appareils k6 qui envoient des lots de 10 opérations et tirent des pages, sans pause, 60 secondes par mesure. Les envois sont sérialisés exprès, pour qu'un pull ne saute jamais une opération : plus d'appareils attendent plus longtemps, sans ajouter de débit.",
+        "Des appareils k6 qui envoient des lots de 10 opérations et tirent des pages, sans pause, 60 secondes par mesure. Depuis la v0.2, les envois s'exécutent en parallèle et plusieurs processus serveur (workers) se partagent la charge : environ 3 000 opérations/s avec 4 workers, pulls à p95 ≤ 56 ms.",
       columns: {
         devices: "Appareils",
+        workers: "Workers",
         ops: "Opérations/s acceptées",
         push: "Push p95",
         pull: "Pull p95",

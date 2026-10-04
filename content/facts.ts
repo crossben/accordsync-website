@@ -110,16 +110,20 @@ export const proofSources = {
 export const ciRuns = { simulations: 3000, propertyCases: 2000 } as const;
 
 /**
- * Load test (website.md section 4): app/load/README.md, measured 2026-10-02. Always shown with
+ * Load test (website.md section 4): app/load/README.md, v0.2 results, measured 2026-10-03. Always shown with
  * its hardware line and caveat.
  */
 export const loadTest = {
   source: `${BLOB}/load/README.md`,
-  hardware: "Intel Core i7-11800H laptop, 31 GiB RAM, PostgreSQL 16 defaults, one server process",
+  version: "0.2",
+  hardware: "Intel Core i7-11800H laptop, 31 GiB RAM, PostgreSQL 16 defaults",
   rows: [
-    { devices: 50, opsPerSec: 1004, pushP95: 548, pullP95: 14 },
-    { devices: 100, opsPerSec: 1033, pushP95: 1049, pullP95: 15 },
-    { devices: 200, opsPerSec: 984, pushP95: 2258, pullP95: 20 },
+    { devices: 50, workers: 1, opsPerSec: 1840, pushP95: 297, pullP95: 46 },
+    { devices: 100, workers: 1, opsPerSec: 1594, pushP95: 658, pullP95: 52 },
+    { devices: 200, workers: 1, opsPerSec: 1682, pushP95: 1483, pullP95: 55 },
+    { devices: 50, workers: 4, opsPerSec: 2998, pushP95: 194, pullP95: 50 },
+    { devices: 100, workers: 4, opsPerSec: 2860, pushP95: 437, pullP95: 56 },
+    { devices: 200, workers: 4, opsPerSec: 3039, pushP95: 808, pullP95: 56 },
   ],
 } as const;
 
@@ -147,3 +151,9 @@ export const playground = {
   simulator: "@accordsync/simulator",
   version: version.number,
 } as const;
+
+/**
+ * The quick start's last line of output: what the client of a project made with `npm create accord`
+ * prints after it syncs. Source: app/packages/create-accord/template/client.ts (check-facts).
+ */
+export const quickstartOutput = "after sync: 0 pending; the server has it.";

@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { conflict, counter, defineSchema, lww, set, type Op, type Schema } from "@accordsync/core";
 import {
-  conflict,
-  counter,
-  defineSchema,
-  lww,
-  set,
-  type Op,
-  type Schema,
-} from "@accordsync/core";
-import { SimDevice, SimServer, createRng, type Rng, type SimConfig, simulate } from "@accordsync/simulator";
+  SimDevice,
+  SimServer,
+  createRng,
+  type Rng,
+  type SimConfig,
+  simulate,
+} from "@accordsync/simulator";
 import type { Content } from "@/content/types";
 
 export const PLAYGROUND_SCHEMA: Schema = defineSchema({
@@ -62,7 +61,10 @@ function isConflicted(value: unknown): value is Conflicted {
   );
 }
 
-export function outcome(devices: SimDevice[]): { identical: boolean; conflicts: { field: string; values: string[] }[] } {
+export function outcome(devices: SimDevice[]): {
+  identical: boolean;
+  conflicts: { field: string; values: string[] }[];
+} {
   const snaps = devices.map((d) => d.writer.replica.snapshot());
   const identical = snaps.every((s) => s === snaps[0]);
   const conflicts: { field: string; values: string[] }[] = [];
@@ -81,7 +83,10 @@ export function outcome(devices: SimDevice[]): { identical: boolean; conflicts: 
   return { identical, conflicts };
 }
 
-export function randomScenario(seed: number): { config: SimConfig; result: ReturnType<typeof simulate> } {
+export function randomScenario(seed: number): {
+  config: SimConfig;
+  result: ReturnType<typeof simulate>;
+} {
   const rng = createRng(seed);
   const config: SimConfig = {
     seed,
@@ -101,7 +106,8 @@ export function randomScenario(seed: number): { config: SimConfig; result: Retur
     maxClockErrorMs: 3_600_000,
     maxSkewMs: 24 * 3_600_000,
   };
-  return { config, result: simulate(config, PLAYGROUND_SCHEMA) };
+  // The simulator's random writes target its own schema (SIM_SCHEMA): use it, not the cards' one.
+  return { config, result: simulate(config) };
 }
 
 export function unsyncedCount(d: SimDevice): number {
@@ -121,6 +127,10 @@ export function fieldLabel(field: string, value: unknown): string {
   if (field === "documents") return Array.isArray(value) ? value.join(", ") : "";
   if (isConflicted(value)) {
     return value.conflicted.map((v) => String(v.value)).join(" | ");
+  }
+  // A conflict() field with a single value reads as { value }.
+  if (typeof value === "object" && value !== null && "value" in value) {
+    return String((value as { value: unknown }).value ?? "");
   }
   return String(value ?? "");
 }

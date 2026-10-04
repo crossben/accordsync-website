@@ -22,6 +22,7 @@ export const en: Content = {
       merges: "Merge rules",
       guarantees: "Guarantees",
       code: "Your code",
+      playground: "Try it",
       proof: "Proof",
       run: "Run it",
       openSource: "Open source",
@@ -224,27 +225,68 @@ export const en: Content = {
   quickstart: {
     heading: "Run it yourself",
     intro:
-      "The repository's quick start: PostgreSQL and the sync server in Docker Compose, with an example configuration.",
+      "One command creates a working project from the published packages: a schema, a server configuration, PostgreSQL in Docker Compose and a client.",
     steps: [
       {
-        title: "Clone the repository",
-        body: "The server, the client, the example apps and the docs live in one repository.",
-        commands: ["git clone https://github.com/crossben/accordsync", "cd accordsync"],
+        title: "Create a project",
+        body: "Node 22.18 or later and Docker.",
+        commands: ["npm create accord my-app", "cd my-app", "npm install"],
       },
       {
         title: "Start PostgreSQL and the server",
-        body: "Docker Compose builds the image and starts both.",
-        commands: ["docker compose up --build"],
+        body: "The project's Compose file runs PostgreSQL; the server runs from npm.",
+        commands: ["docker compose up -d", "cp .env.example .env", "npm run server"],
       },
       {
-        title: "Check health",
-        body: "The server answers with the protocol version it speaks.",
-        commands: ["curl localhost:8080/health"],
+        title: "Run a device",
+        body: "In another terminal: the example client writes four changes offline, then syncs.",
+        commands: ["npm run client"],
       },
     ],
-    note: "Node 22.12+ and pnpm 11 if you want to develop on Accord itself; the server tests start PostgreSQL 16 with Testcontainers.",
+    note: "To work on Accord itself (pnpm, the test suites), see the repository README.",
     terminalLabel: "Terminal",
-    terminalNote: "Real commands and the real health response — from the endpoint's own test.",
+    terminalNote: "Real commands; the last line is what the example client prints after it syncs.",
+  },
+
+  playground: {
+    heading: "Try it",
+    intro:
+      "Three devices and a server, running the real @accordsync/core and simulator in your browser; no server is involved. Take a device offline, edit the same dossier on two of them, and bring them back.",
+    noscript:
+      "The playground needs JavaScript. The field-app example in the repository shows the same thing with a real server.",
+    loading: "Loading the playground…",
+    device: "Device",
+    server: "Server",
+    online: "Online",
+    offline: "Offline",
+    unsynced: "{n} unsynced",
+    opsOnServer: "{n} ops in the log",
+    fields: { name: "Client name", visits: "Visits", documents: "Documents", status: "Status" },
+    actions: {
+      visit: "+1 visit",
+      rename: "Rename",
+      addDoc: "Add cni.pdf",
+      removeDoc: "Remove cni.pdf",
+      approve: "Approve",
+      reject: "Reject",
+      keep: "Keep “{value}”",
+    },
+    none: "—",
+    outcome: {
+      waiting:
+        "Some devices are offline or have unsynced changes: the replicas may differ until they sync.",
+      identical: "All replicas identical.",
+      conflicted: "Status conflicted: {values}. Accord kept every value: your app decides.",
+    },
+    faults: {
+      run: "Random faults",
+      rerun: "Replay seed {seed}",
+      reset: "Reset",
+      result:
+        "Seed {seed}: {ops} writes on 3 devices, {dropped} messages dropped, {duplicated} duplicated, {partitions} partitions. After the network healed: {verdict}",
+      diverged: "replicas differ. This should never happen: please report the seed.",
+    },
+    announce: { online: "{device} is online.", offline: "{device} is offline." },
   },
 
   proof: {
@@ -271,8 +313,14 @@ export const en: Content = {
     load: {
       heading: "Under load",
       intro:
-        "k6 devices pushing batches of 10 ops and pulling pages, non-stop, for 60 seconds per run. Pushes are serialized on purpose, so a pull can never skip an op: more devices wait longer, they do not add throughput.",
-      columns: { devices: "Devices", ops: "Ops/s accepted", push: "Push p95", pull: "Pull p95" },
+        "k6 devices pushing batches of 10 ops and pulling pages, non-stop, for 60 seconds per run. Since v0.2 pushes run concurrently, and several server processes (workers) share the load: about 3 000 ops/s with 4 workers, pulls at p95 ≤ 56 ms.",
+      columns: {
+        devices: "Devices",
+        workers: "Workers",
+        ops: "Ops/s accepted",
+        push: "Push p95",
+        pull: "Pull p95",
+      },
       hardwareLabel: "Measured on:",
       caveat:
         "No failed requests. One machine and a synthetic workload: run it on your own setup before relying on it.",

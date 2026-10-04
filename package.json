@@ -18,8 +18,8 @@
     "check:snippets": "node scripts/check-snippets.mjs"
   },
   "dependencies": {
-    "@accordsync/core": "0.1.0",
-    "@accordsync/simulator": "0.1.0",
+    "@accordsync/core": "0.2.0",
+    "@accordsync/simulator": "0.2.0",
     "@gsap/react": "^2.1.2",
     "gsap": "^3.15.0",
     "next": "16.3.8",

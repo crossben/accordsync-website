@@ -187,16 +187,25 @@ const FACTS = [
     strings: ["enrolment agents, waste collectors, shopkeepers"],
   },
   {
-    id: "quick start: Docker Compose + health check (app/README.md, section Develop, since M0)",
+    id: "quick start: npm create accord, then the template's commands (home page, section 5.9)",
     base: "app",
-    file: "README.md",
-    strings: ["docker compose up --build", "curl localhost:8080/health", "Node 22.12+"],
+    file: "packages/create-accord/template/README.md",
+    strings: [
+      "npm install",
+      "docker compose up -d",
+      "cp .env.example .env",
+      "npm run server",
+      "npm run client",
+    ],
+    appSource: { file: "packages/create-accord/README.md", strings: ["npm create accord my-app"] },
   },
   {
-    id: "health response shape (packages/server/test/health.test.ts)",
+    id: "quick start output: what the example client prints after syncing (facts.quickstartOutput)",
     base: "app",
-    file: "packages/server/test/health.test.ts",
-    strings: ["protocolVersion: 1"],
+    file: "packages/create-accord/template/client.ts",
+    strings: [
+      "console.log('after sync:', accord.status().pending, 'pending; the server has it.');",
+    ],
   },
   {
     id: "version 0.2.0, released 2026-10-03 (facts.version)",
@@ -263,12 +272,7 @@ const FACTS = [
     id: "load test numbers and hardware (facts.loadTest)",
     base: "app",
     file: "load/README.md",
-    strings: [
-      "Intel Core i7-11800H",
-      "| 50 | 1 004 | 479 ms | 548 ms | 640 ms | 11 ms | 14 ms | 0 % |",
-      "| 100 | 1 033 | 975 ms | 1 049 ms | 1 076 ms | 11 ms | 15 ms | 0 % |",
-      "| 200 | 984 | 1 951 ms | 2 258 ms | 2 463 ms | 13 ms | 20 ms | 0 % |",
-    ],
+    strings: ["Intel Core i7-11800H", "## Results: v0.2", "ACCORD_WORKERS"],
   },
   {
     id: "security and contributing files (features.repoLinks)",
@@ -428,18 +432,32 @@ if (siteVersion) {
   }
 }
 
+// The playground runs the published packages pinned in package.json: same version as the site says.
+if (siteVersion) {
+  const pkg = JSON.parse(readFileSync(join(websiteRoot, "package.json"), "utf8"));
+  for (const dep of ["@accordsync/core", "@accordsync/simulator"]) {
+    if (pkg.dependencies?.[dep] !== siteVersion[1]) {
+      problems.push(
+        `  package.json pins ${dep} at ${pkg.dependencies?.[dep] ?? "nothing"}; the playground must run ${siteVersion[1]}`,
+      );
+    }
+  }
+}
+
 // Load numbers on the site (facts.loadTest.rows) must be the ones in app/load/README.md.
 const loadReadme = normalize(readSource("app", "load/README.md").content ?? "");
 const group = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 for (const m of factsSource.matchAll(
-  /\{ devices: (\d+), opsPerSec: (\d+), pushP95: (\d+), pullP95: (\d+) \}/g,
+  /\{ devices: (\d+), workers: (\d+), opsPerSec: (\d+), pushP95: (\d+), pullP95: (\d+) \}/g,
 )) {
-  const [, devices, ops, push, pull] = m;
+  const [, devices, workers, ops, push, pull] = m;
   const row = new RegExp(
-    `\\| ${devices} \\| ${group(ops)} \\| [^|]+ \\| ${group(push)} ms \\| [^|]+ \\| [^|]+ \\| ${pull} ms \\|`,
+    `\\| ${devices} \\| ${workers} \\| ${group(ops)} \\| [^|]+ \\| ${group(push)} ms \\| [^|]+ \\| [^|]+ \\| ${pull} ms \\|`,
   );
   if (!row.test(loadReadme)) {
-    problems.push(`  facts.loadTest row for ${devices} devices does not match app/load/README.md`);
+    problems.push(
+      `  facts.loadTest row for ${devices} devices, ${workers} workers does not match app/load/README.md`,
+    );
   }
 }
 

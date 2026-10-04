@@ -11,22 +11,21 @@ gsap.registerPlugin(ScrollTrigger, TextPlugin, useGSAP);
 
 /**
  * The quick-start terminal (website.md section 6, section 5.9): the commands type themselves,
- * then the real output appears — the health response, byte for byte what the
- * endpoint's own test asserts. The real, copyable commands sit next to this
+ * then the real output appears: what the scaffolded example client prints after
+ * it syncs (facts.quickstartOutput). The real, copyable commands sit next to this
  * block in the section. Plays once; with prefers-reduced-motion, and without
  * JavaScript, the full text is simply there (the markup is authored complete).
  */
 
-// The real response of GET /health — source: app/packages/server/test/health.test.ts,
-// guarded by scripts/check-facts.mjs.
-const HEALTH_RESPONSE = '{"status":"ok","protocolVersion":1}';
-
 export default function Terminal({
   label,
   commands,
+  output,
 }: {
   label: Content["quickstart"]["terminalLabel"];
   commands: string[];
+  /** The real last line of output, from the facts sheet (guarded by check-facts). */
+  output: string;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -82,7 +81,7 @@ export default function Terminal({
           </p>
         ))}
         <p data-out="" className="mt-1 whitespace-pre-wrap break-all">
-          {HEALTH_RESPONSE}
+          {output}
         </p>
       </div>
     </div>

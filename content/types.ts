@@ -27,6 +27,7 @@ export type Content = {
       merges: string;
       guarantees: string;
       code: string;
+      playground: string;
       proof: string;
       run: string;
       openSource: string;
@@ -132,6 +133,44 @@ export type Content = {
     terminalNote: string;
   };
 
+  /** The playground (website.md section 5.7, showcase.md): the real core and simulator in the page. */
+  playground: {
+    heading: string;
+    intro: string;
+    noscript: string;
+    loading: string;
+    device: string;
+    server: string;
+    online: string;
+    offline: string;
+    unsynced: string;
+    opsOnServer: string;
+    fields: { name: string; visits: string; documents: string; status: string };
+    actions: {
+      visit: string;
+      rename: string;
+      addDoc: string;
+      removeDoc: string;
+      approve: string;
+      reject: string;
+      keep: string;
+    };
+    none: string;
+    outcome: {
+      waiting: string;
+      identical: string;
+      conflicted: string;
+    };
+    faults: {
+      run: string;
+      rerun: string;
+      reset: string;
+      result: string;
+      diverged: string;
+    };
+    announce: { online: string; offline: string };
+  };
+
   proof: {
     heading: string;
     intro: string;
@@ -149,7 +188,7 @@ export type Content = {
     load: {
       heading: string;
       intro: string;
-      columns: { devices: string; ops: string; push: string; pull: string };
+      columns: { devices: string; workers: string; ops: string; push: string; pull: string };
       hardwareLabel: string;
       caveat: string;
       link: string;

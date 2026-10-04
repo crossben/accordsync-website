@@ -7,6 +7,7 @@ import {
   licence,
   loadTest,
   proofSources,
+  quickstartOutput,
   proofs,
   repo,
   screenshot,
@@ -25,6 +26,7 @@ import SyncTimeline from "@/components/SyncTimeline";
 import MergeTable from "@/components/MergeTable";
 import CodeTabs, { type CodeTab } from "@/components/CodeTabs";
 import CodeBlock from "@/components/CodeBlock";
+import PlaygroundMount from "@/components/playground/PlaygroundMount";
 import Terminal from "@/components/Terminal";
 
 function JsonLd({ content }: { content: Content }) {
@@ -250,9 +252,19 @@ export default async function Page({ content }: { content: Content }) {
           ) : null}
         </Section>
 
-        {/* 7 — Playground: hidden until M2 (features.playground, section 5.7). It will run
-            the real @accordsync/core and simulator, lazy-loaded; nothing is
-            rendered here until then. */}
+        {/* 7 — Playground: the published @accordsync/core and simulator, loaded when visible. */}
+        {features.playground ? (
+          <Section
+            id="playground"
+            title={content.playground.heading}
+            intro={content.playground.intro}
+          >
+            <noscript>
+              <p className="text-sm text-muted">{content.playground.noscript}</p>
+            </noscript>
+            <PlaygroundMount t={content.playground} />
+          </Section>
+        ) : null}
 
         {/* 8 — Proof */}
         <Section id="proof" title={content.proof.heading} intro={content.proof.intro}>
@@ -296,6 +308,9 @@ export default async function Page({ content }: { content: Content }) {
                         {content.proof.load.columns.devices}
                       </th>
                       <th scope="col" className="px-4 py-3 font-semibold">
+                        {content.proof.load.columns.workers}
+                      </th>
+                      <th scope="col" className="px-4 py-3 font-semibold">
                         {content.proof.load.columns.ops}
                       </th>
                       <th scope="col" className="px-4 py-3 font-semibold">
@@ -315,6 +330,7 @@ export default async function Page({ content }: { content: Content }) {
                         <th scope="row" className="px-4 py-3 font-medium">
                           {r.devices}
                         </th>
+                        <td className="px-4 py-3">{r.workers}</td>
                         <td className="px-4 py-3">{r.opsPerSec.toLocaleString(content.lang)}</td>
                         <td className="px-4 py-3">{r.pushP95.toLocaleString(content.lang)} ms</td>
                         <td className="px-4 py-3">{r.pullP95} ms</td>
@@ -366,6 +382,7 @@ export default async function Page({ content }: { content: Content }) {
                 <Terminal
                   label={content.quickstart.terminalLabel}
                   commands={content.quickstart.steps.flatMap((s) => s.commands)}
+                  output={quickstartOutput}
                 />
                 <p className="mt-2 text-sm text-muted">{content.quickstart.terminalNote}</p>
               </div>

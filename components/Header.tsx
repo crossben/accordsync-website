@@ -107,6 +107,7 @@ export default function Header({
     ["#merges", content.header.nav.merges],
     ["#guarantees", content.header.nav.guarantees],
     ["#code", content.header.nav.code],
+    ["#playground", content.header.nav.playground],
     ["#proof", content.header.nav.proof],
     ["#run", content.header.nav.run],
     ["#opensource", content.header.nav.openSource],

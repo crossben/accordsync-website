@@ -16,6 +16,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { DOC_SNIPPETS, DOC_SOURCES } from "./doc-snippets.mjs";
 
 const websiteRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const appDir = resolve(websiteRoot, "accord"); // the committed snapshot
@@ -287,6 +288,29 @@ const FACTS = [
     },
     mustExist: "docs/screens/field-app-conflict.png",
   },
+  {
+    id: "new packages on npm: @accordsync/react and create-accord (versions = facts.version)",
+    base: "app",
+    file: "packages/react/package.json",
+    strings: ['"name": "@accordsync/react"'],
+    appSource: {
+      file: "packages/create-accord/package.json",
+      strings: ['"name": "create-accord"'],
+    },
+  },
+  // The docs pages (docs.md): every cited file, and every snippet marker, must still be there.
+  ...DOC_SOURCES.map((file) => ({
+    id: `docs page source ${file}`,
+    base: "app",
+    file,
+    strings: [],
+  })),
+  ...Object.entries(DOC_SNIPPETS).map(([id, { file, marker }]) => ({
+    id: `docs snippet ${id}`,
+    base: "app",
+    file,
+    strings: [marker],
+  })),
 ];
 
 // website.md section 0 — reviewers reject these on sight. Scan the copy itself, not
@@ -388,6 +412,19 @@ if (!existsSync(changelogPath)) {
       `  app/CHANGELOG.md's latest release is ${latest ? `${latest[1]} (${latest[2]})` : "missing"},\n` +
         `  but facts.version says ${siteVersion[1]} (${siteVersion[2]}). Update them in the same PR.`,
     );
+  }
+}
+
+// Package versions in the snapshot must equal the site's version (the docs pages say "v<version>").
+if (siteVersion) {
+  for (const pkg of ["core", "client", "server", "react", "simulator", "create-accord"]) {
+    const file = join(appDir, "packages", pkg, "package.json");
+    const v = existsSync(file) ? JSON.parse(readFileSync(file, "utf8")).version : null;
+    if (v !== siteVersion[1]) {
+      problems.push(
+        `  packages/${pkg} is ${v ?? "missing"}, but facts.version says ${siteVersion[1]}`,
+      );
+    }
   }
 }
 

@@ -329,6 +329,286 @@ export const fr: Content = {
     },
   },
 
+  docs: {
+    navLabel: "Documentation",
+    headerLink: "Docs",
+    index: {
+      title: "Documentation",
+      description:
+        "Documentation d'Accord : démarrage rapide, schéma et règles de fusion, le client, React et React Native, le serveur, les périmètres, le protocole de sync et la sécurité.",
+      intro:
+        "Tout pour construire une appli offline-first sur Accord : le client écrit en local et synchronise, le serveur auto-hébergé fusionne selon vos règles. Chaque exemple de code de ces pages est lu dans le dépôt au moment du build : il correspond aux paquets publiés.",
+      install: "Créez un projet en une commande :",
+      note: "Les exemples de code et leurs commentaires viennent du dépôt, en anglais.",
+    },
+    sourceLabel: "Source",
+    fromLabel: "depuis",
+    pages: {
+      quickstart: {
+        title: "Démarrage rapide",
+        description:
+          "Créer un projet Accord, lancer le serveur et un appareil qui écrit hors ligne puis synchronise.",
+        intro:
+          "Une commande crée un projet qui fonctionne : un schéma, une configuration serveur, PostgreSQL dans Docker Compose, un script de jetons de développement et un client.",
+        sections: {
+          create: {
+            title: "Créer un projet",
+            body: ["Il faut Node 22.18 ou plus récent, et Docker."],
+          },
+          run: {
+            title: "Le lancer",
+            body: [
+              "Démarrez PostgreSQL et le serveur, puis l'appareil d'exemple : il écrit quatre changements sans réseau, synchronise, et n'a plus aucun changement en attente.",
+            ],
+          },
+          files: {
+            title: "Ce que vous obtenez",
+            body: [],
+            items: [
+              "`schema.ts` : vos enregistrements et la fusion de chaque champ, partagés par le serveur et tous les clients.",
+              "`accord.config.ts` : le serveur, avec vos règles de périmètre et la vérification des jetons.",
+              "`client.ts` : un appareil qui écrit hors ligne, puis synchronise.",
+              "`dev-token.mjs` : des jetons de développement. En production, c'est votre serveur d'authentification qui les émet.",
+            ],
+          },
+        },
+      },
+      schema: {
+        title: "Schéma et règles de fusion",
+        description: "Déclarer comment chaque champ fusionne : lww, counter, set et conflict().",
+        intro:
+          "Chaque champ déclare comment fusionnent les modifications concurrentes. Quel que soit l'ordre d'arrivée, et le nombre d'arrivées, chaque appareil lit la même valeur.",
+        sections: {
+          strategies: { title: "Les quatre stratégies", body: [] },
+          define: {
+            title: "Déclarer un schéma",
+            body: [
+              "Le même fichier de schéma sert au serveur et à chaque client : importez-le des deux côtés.",
+            ],
+          },
+          conflicts: {
+            title: "Trancher un conflict()",
+            body: [
+              "Un champ `conflict()` garde chaque valeur écrite en concurrence et reste marqué. Trancher, c'est écrire en voyant toutes les valeurs en conflit : l'écriture remplace exactement celles-là. Une valeur écrite ailleurs, que l'appareil n'avait pas encore vue, n'est jamais effacée : le champ reste en conflit jusqu'à ce qu'elle soit tranchée à son tour.",
+            ],
+          },
+        },
+      },
+      client: {
+        title: "Client",
+        description:
+          "Ouvrir le client Accord, écrire hors ligne, trancher les conflits et réagir aux événements.",
+        intro:
+          "`@accordsync/client` garde sur l'appareil une copie de travail complète des enregistrements de l'utilisateur. Les écritures s'appliquent tout de suite, sans réseau ; la sync tourne en arrière-plan.",
+        sections: {
+          open: {
+            title: "Ouvrir et écrire",
+            body: [
+              "Chaque écriture se termine une fois enregistrée sur l'appareil, et `read` la voit tout de suite. `start()` synchronise après les écritures, toutes les 30 secondes, et espace les essais hors ligne.",
+            ],
+          },
+          conflicts: {
+            title: "Trancher les conflits",
+            body: [
+              "Affichez chaque champ en conflit avec toutes ses valeurs, et laissez quelqu'un décider.",
+            ],
+          },
+          events: {
+            title: "Événements",
+            body: [
+              "`change` quand l'état local a changé, `refused` quand le serveur a refusé une écriture (déjà annulée), `synced` après un tour de sync, `resync` quand les données ont été rechargées, `error` quand un tour a échoué et sera réessayé.",
+            ],
+          },
+          storage: {
+            title: "Stockage",
+            body: [],
+            items: [
+              "`IndexedDbStorage` : navigateurs.",
+              "`SqliteStorage` : tout SQLite via un pilote à deux méthodes : wa-sqlite sur le web, op-sqlite sur React Native, `node:sqlite` ou better-sqlite3 dans Node.",
+              "`MemoryStorage` : tests ; les écritures non synchronisées sont perdues au redémarrage.",
+            ],
+          },
+        },
+      },
+      react: {
+        title: "React",
+        description:
+          "Hooks React pour Accord : useRecord, useRecords, useConflicts, useSyncStatus.",
+        intro:
+          "`@accordsync/react` donne aux composants les enregistrements, les conflits et l'état de sync de l'appareil, et les ré-affiche quand l'état local change, qu'il s'agisse d'une écriture locale ou de la sync.",
+        sections: {
+          hooks: { title: "Provider et hooks", body: [] },
+          rendering: {
+            title: "Ré-affichage",
+            body: [
+              "Un composant n'est ré-affiché que si ce qu'il lit a changé : un enregistrement inchangé garde la même valeur, et React l'ignore.",
+            ],
+          },
+        },
+      },
+      "react-native": {
+        title: "React Native",
+        description:
+          "Accord sur React Native : stockage op-sqlite, identifiants d'appareil, et sync selon le cycle de vie de l'appli.",
+        intro:
+          "Les applis de terrain tournent surtout sur téléphone. Voici le client avec SQLite sur l'appareil, une sync qui suit le cycle de vie de l'appli, et les hooks React.",
+        sections: {
+          install: {
+            title: "Installer",
+            body: [
+              "op-sqlite est un module natif : avec Expo, utilisez un development build. Importez le polyfill en premier : le client a besoin d'une source aléatoire sûre pour l'identifiant d'appareil, et s'arrête avec une explication sans elle.",
+            ],
+          },
+          open: {
+            title: "Ouvrir le client",
+            body: [
+              "Ne fixez pas `deviceId` : le client en crée un et le garde. Les tables d'Accord sont préfixées `accord_`, elles peuvent donc partager la base de votre appli.",
+            ],
+          },
+          lifecycle: {
+            title: "Synchroniser selon le cycle de vie",
+            body: [
+              "Synchronisez au premier plan, mettez en pause en arrière-plan, et synchronisez dès que le réseau revient. Les écritures n'attendent jamais rien de tout cela.",
+            ],
+          },
+        },
+      },
+      server: {
+        title: "Serveur",
+        description:
+          "Configurer et lancer le serveur de sync Accord : périmètres, authentification, environnement, workers et compaction.",
+        intro:
+          "`@accordsync/server` est un serveur de sync auto-hébergé sur PostgreSQL. Vous décrivez vos enregistrements et qui peut les voir dans un fichier TypeScript, puis lancez `accord serve`.",
+        sections: {
+          configure: {
+            title: "Configurer",
+            body: [
+              "Lancez-le avec `accord serve --config accord.config.ts`, ou avec l'image Docker. En production, utilisez `jwksUrl` avec un `issuer` et une `audience`.",
+            ],
+          },
+          env: {
+            title: "Environnement",
+            body: [],
+            items: [
+              "`ACCORD_DATABASE_URL` : la chaîne de connexion PostgreSQL (obligatoire).",
+              "`ACCORD_PORT` : le port HTTP (8080 par défaut).",
+              "`ACCORD_DB_POOL` : connexions PostgreSQL par processus (20 par défaut).",
+              "`ACCORD_WORKERS` : processus serveur sur le même port, un nombre ou `auto` (1 par défaut).",
+            ],
+          },
+          scaling: {
+            title: "Workers et compaction",
+            body: [
+              "Les envois s'exécutent en parallèle : plusieurs workers ajoutent du débit. Toutes les heures, le serveur replie en instantanés l'historique que tous les appareils ont déjà ; `accord compact` le fait une fois.",
+            ],
+          },
+        },
+      },
+      scopes: {
+        title: "Règles de périmètre",
+        description:
+          "Qui peut lire et écrire quoi : le fonctionnement des périmètres d'Accord, cinq modèles testés, et les règles qui les gardent justes.",
+        intro:
+          "Les périmètres sont votre politique d'accès : un enregistrement appartient à des clés calculées depuis ses champs, et chaque utilisateur peut lire et écrire certaines clés. Un utilisateur voit un enregistrement quand ils partagent une clé.",
+        sections: {
+          how: {
+            title: "Fonctionnement",
+            body: [
+              "Un enregistrement existant accepte une écriture si ses clés actuelles croisent les clés d'écriture de l'utilisateur ; un nouvel enregistrement, si les clés qu'il aurait après l'écriture les croisent. Quand une écriture déplace un enregistrement, les appareils qui ne peuvent plus le voir le suppriment ; ceux qui le peuvent désormais reçoivent tout son historique.",
+            ],
+          },
+          patterns: {
+            title: "Modèles",
+            body: [
+              "Le dépôt propose cinq modèles testés : personnel, équipe de terrain, superviseur, multi-organisation et listes partagées. En voici trois :",
+            ],
+          },
+          rules: {
+            title: "Règles pour des périmètres justes",
+            body: [],
+            items: [
+              "Fermé par défaut : un enregistrement sans clé n'est visible par personne.",
+              "Des fonctions de périmètre pures : ni horloge, ni hasard, ni réseau, ni base de données.",
+              "Le champ de périmètre dès la première écriture de l'enregistrement.",
+              "Les claims sont relus à chaque requête : des jetons de courte durée pour retirer un accès vite.",
+              "Testez les périmètres comme du code : un utilisateur qui doit voir un enregistrement, un qui ne doit pas.",
+            ],
+          },
+        },
+      },
+      protocol: {
+        title: "Protocole de sync",
+        description:
+          "Le protocole de sync HTTP d'Accord, version 1 : push, pull, resync et erreurs.",
+        intro:
+          "Les clients et le serveur échangent en HTTPS et JSON. Chaque requête porte le jeton de l'utilisateur et l'identifiant de l'appareil ; les JSON Schemas de chaque message sont dans le dépôt.",
+        sections: {
+          push: {
+            title: "Push",
+            body: [
+              "Envoyez la file d'attente dans l'ordre d'écriture. Les opérations acceptées quittent la file ; les refusées, chacune avec sa raison, sont annulées sur l'appareil. Renvoyer un lot est toujours sans danger.",
+            ],
+          },
+          pull: {
+            title: "Pull",
+            body: [
+              "Partez du curseur 0, appliquez chaque élément, gardez le curseur, et recommencez tant que `has_more` est vrai. `device_seq` indique à l'appareil où en sont ses propres numéros d'opération : un identifiant n'est jamais réutilisé.",
+            ],
+          },
+          resync: {
+            title: "Resync",
+            body: [
+              "Quand les périmètres d'un utilisateur changent, la page suivante apporte les enregistrements entrés et retire ceux qui sont sortis. Seul un très gros changement, ou un appareil de retour après une longue absence, reçoit cette réponse à la place.",
+            ],
+          },
+          errors: {
+            title: "Erreurs",
+            body: [],
+            items: [
+              "`400` : requête mal formée.",
+              "`401` : jeton absent ou invalide.",
+              "`403` : l'identifiant d'appareil appartient à un autre utilisateur.",
+              "`429` : limite de débit ; attendez `Retry-After`.",
+              "`500` : erreur serveur ; réessayez avec un délai croissant (les envois sont idempotents).",
+            ],
+          },
+        },
+      },
+      security: {
+        title: "Sécurité",
+        description:
+          "Ce que le serveur Accord applique, et ce qu'il faut configurer au déploiement.",
+        intro:
+          "Le serveur applique l'autorisation à chaque push et chaque pull. Quelques réglages restent à votre charge au déploiement.",
+        sections: {
+          enforced: {
+            title: "Appliqué par le serveur",
+            body: [],
+            items: [
+              "Chaque requête de sync exige un JWT vérifié ; les périmètres filtrent chaque pull et contrôlent chaque opération envoyée.",
+              "Un identifiant d'appareil est lié à son premier utilisateur ; un appareil n'envoie que ses propres opérations.",
+              "Une opération renvoyée n'est jamais appliquée deux fois ; un identifiant réutilisé est refusé, jamais accepté en silence.",
+              "Les horloges très en avance sont refusées ; l'historique est en ajout seul, imposé par PostgreSQL.",
+              "La taille et le débit des requêtes sont limités (413 et 429).",
+            ],
+          },
+          deploy: {
+            title: "Votre part au déploiement",
+            body: [],
+            items: [
+              "Utilisez `jwksUrl` avec `issuer` et `audience`, jamais le secret de développement.",
+              "Terminez TLS devant Accord.",
+              "Limitez CORS aux origines de votre appli.",
+              "Sauvegardez PostgreSQL et restreignez son accès réseau.",
+              "Chiffrez les données sensibles sur les appareils : Accord ne chiffre pas le stockage local.",
+            ],
+          },
+        },
+      },
+    },
+    homeLinks: { code: "Lire la doc du client", run: "Lire le démarrage rapide" },
+  },
+
   footer: {
     tagline: "Conçu pour les réseaux qui mentent.",
     statusLine: "v{version}, publiée le {date}. Avant la 1.0.",

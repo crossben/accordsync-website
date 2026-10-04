@@ -13,6 +13,7 @@ import {
   strategies,
 } from "@/content/facts";
 import { features } from "@/content/features";
+import { docsHref } from "@/lib/docsPages";
 import type { Content } from "@/content/types";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -23,7 +24,7 @@ import PlannedBadge from "@/components/PlannedBadge";
 import SyncTimeline from "@/components/SyncTimeline";
 import MergeTable from "@/components/MergeTable";
 import CodeTabs, { type CodeTab } from "@/components/CodeTabs";
-import CopyButton from "@/components/CopyButton";
+import CodeBlock from "@/components/CodeBlock";
 import Terminal from "@/components/Terminal";
 
 function JsonLd({ content }: { content: Content }) {
@@ -59,29 +60,6 @@ function JsonLd({ content }: { content: Content }) {
   };
   return (
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
-  );
-}
-
-async function CodeBlock({
-  code,
-  lang,
-  labels,
-}: {
-  code: string;
-  lang: string;
-  labels: { copy: string; copied: string };
-}) {
-  const html = await highlight(code, lang);
-  return (
-    <div className="rounded-xl border border-line bg-surface">
-      <div className="flex justify-end px-3 pt-2">
-        <CopyButton text={code} label={labels.copy} copiedLabel={labels.copied} />
-      </div>
-      <div
-        className="overflow-x-auto px-4 pb-4 pt-1 text-sm"
-        dangerouslySetInnerHTML={{ __html: html }}
-      />
-    </div>
   );
 }
 
@@ -246,6 +224,11 @@ export default async function Page({ content }: { content: Content }) {
             </p>
           )}
           <CodeTabs tabs={tabs} labels={content.code} />
+          <p className="mt-4 text-sm">
+            <a href={docsHref(content.lang, "client")} className={linkClass}>
+              {content.docs.homeLinks.code} →
+            </a>
+          </p>
           {features.screenshots ? (
             <figure className="mt-12">
               <img
@@ -373,6 +356,11 @@ export default async function Page({ content }: { content: Content }) {
                   </div>
                 ))}
                 <p className="text-sm leading-relaxed text-muted">{content.quickstart.note}</p>
+                <p className="text-sm">
+                  <a href={docsHref(content.lang, "quickstart")} className={linkClass}>
+                    {content.docs.homeLinks.run} →
+                  </a>
+                </p>
               </div>
               <div className="min-w-0 lg:sticky lg:top-24 lg:self-start">
                 <Terminal

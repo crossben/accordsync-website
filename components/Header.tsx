@@ -66,7 +66,7 @@ function ThemeToggle({ labels }: { labels: Content["header"]["themeToggle"] }) {
   );
 }
 
-function LanguageLink({ other }: { other: Content["otherLang"] }) {
+function LanguageLink({ other, href }: { other: Content["otherLang"]; href?: string | undefined }) {
   const [hash, setHash] = useState("");
   useEffect(() => {
     // Keep the current section when switching language (website.md section 3).
@@ -77,7 +77,7 @@ function LanguageLink({ other }: { other: Content["otherLang"] }) {
   }, []);
   return (
     <a
-      href={other.href + hash}
+      href={(href ?? other.href) + hash}
       lang={other.href.startsWith("/fr") ? "fr" : "en"}
       className="rounded-full border border-line px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:border-accent hover:text-accent"
     >
@@ -86,7 +86,21 @@ function LanguageLink({ other }: { other: Content["otherLang"] }) {
   );
 }
 
-export default function Header({ content }: { content: Content }) {
+export default function Header({
+  content,
+  onHome = true,
+  otherHref,
+  current,
+}: {
+  content: Content;
+  /** On a docs page, section links point back to the home page. */
+  onHome?: boolean;
+  /** The same page in the other language (the docs pages pass theirs). */
+  otherHref?: string;
+  current?: "docs";
+}) {
+  const home = content.lang === "en" ? "/" : "/fr/";
+  const docsHome = content.lang === "en" ? "/docs/" : "/fr/docs/";
   const nav = [
     ["#problem", content.header.nav.problem],
     ["#how", content.header.nav.how],
@@ -100,12 +114,8 @@ export default function Header({ content }: { content: Content }) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-bg/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 md:px-6">
-        <a
-          href={content.lang === "en" ? "/" : "/fr/"}
-          aria-label={content.header.homeAria}
-          className="flex shrink-0 items-center"
-        >
+      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-4 md:px-6">
+        <a href={home} aria-label={content.header.homeAria} className="flex shrink-0 items-center">
           {/* Proposed brand files (website.md section 2): they move to app/docs/assets/ once approved. */}
           <img
             src="/brand/logo.svg"
@@ -131,18 +141,34 @@ export default function Header({ content }: { content: Content }) {
             {nav.map(([href, label]) => (
               <li key={href}>
                 <a
-                  href={href}
+                  href={onHome ? href : `${home}${href}`}
                   className="rounded-full px-2.5 py-1.5 text-sm text-muted transition-colors hover:text-ink"
                 >
                   {label}
                 </a>
               </li>
             ))}
+            <li>
+              <a
+                href={docsHome}
+                aria-current={current === "docs" ? "page" : undefined}
+                className="rounded-full px-2.5 py-1.5 text-sm font-medium text-ink transition-colors hover:text-accent aria-[current=page]:text-accent"
+              >
+                {content.docs.headerLink}
+              </a>
+            </li>
           </ul>
         </nav>
 
-        <div className="ml-auto flex items-center gap-2 lg:ml-0">
-          <LanguageLink other={content.otherLang} />
+        <div className="ml-auto flex items-center gap-1.5 sm:gap-2 lg:ml-0">
+          <a
+            href={docsHome}
+            aria-current={current === "docs" ? "page" : undefined}
+            className="rounded-full px-1.5 py-1.5 text-sm font-medium text-ink hover:text-accent sm:px-2.5 lg:hidden"
+          >
+            {content.docs.headerLink}
+          </a>
+          <LanguageLink other={content.otherLang} href={otherHref} />
           <ThemeToggle labels={content.header.themeToggle} />
           <a
             href={repo.home}

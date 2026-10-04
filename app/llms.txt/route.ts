@@ -1,4 +1,6 @@
-import { licence, npmName, repo, version } from "@/content/facts";
+import { licence, repo, version } from "@/content/facts";
+import { en } from "@/content/en";
+import { docsHref, docsPages } from "@/lib/docsPages";
 
 // /llms.txt — the convention for making a site legible to LLM crawlers
 // (https://llmstxt.org): an H1, a blockquote summary, then curated sections of
@@ -10,52 +12,55 @@ const SITE = "https://accord.benhattab.pro";
 
 export function GET() {
   const status = `v${version.number} (${version.date}), pre-1.0`;
+  const docsLines = docsPages
+    .map(
+      (p) =>
+        `- [${en.docs.pages[p.slug].title}](${SITE}${docsHref("en", p.slug)}): ${en.docs.pages[p.slug].description}`,
+    )
+    .join("\n");
   const body = `# Accord
 
-> Accord is an open-source, self-hosted, offline-first sync engine in
-> development for field apps: apps write locally first (SQLite or IndexedDB),
-> changes are operations in an append-only log ordered by hybrid logical
-> clocks, and on reconnect every replica converges by declared per-field merge
-> rules — \`lww\`, \`counter\` (a PN-counter), \`set\` (add-wins) and
-> \`conflict()\` (never auto-resolved: the app decides). TypeScript everywhere,
-> PostgreSQL on the server, Apache-2.0.
+> Accord is an open-source, self-hosted, offline-first sync engine for field
+> apps: apps write locally first (SQLite or IndexedDB), changes are operations
+> in an append-only log ordered by hybrid logical clocks, and on reconnect every
+> replica converges by declared per-field merge rules — \`lww\`, \`counter\`
+> (a PN-counter), \`set\` (add-wins) and \`conflict()\` (never auto-resolved:
+> the app decides). TypeScript everywhere, PostgreSQL on the server, Apache-2.0.
 
-Status: ${status}. The site is a one-page introduction in English and French.
-Illustrations on the page show how the sync is designed to work; they are not
-live views, and no performance numbers are claimed anywhere.
+Status: ${status}. Packages on npm: @accordsync/core, @accordsync/client,
+@accordsync/server, @accordsync/react, @accordsync/simulator and
+create-accord (\`npm create accord my-app\`).
 
-## Page
+## Site
 
 - [Home (English)](${SITE}/): the problem, how sync works, the merge rules,
-  the planned guarantees, an API-preview code tab, the proof plan, a quick
-  start, what Accord is not, and the licence.
+  the guarantees with the tests that prove them, code, proof and load results,
+  a quick start, what Accord is not, and the licence.
 - [Accueil (Français)](${SITE}/fr/): the same page in French.
+- [Docs](${SITE}/docs/): developer documentation (also in French at /fr/docs/).
+
+## Docs
+
+${docsLines}
 
 ## Repository
 
-- [crossben/accordsync](${repo.home}): the Accord source of truth. Facts on
-  the site are checked against it at build time.
-- [README](${repo.blob}/README.md): what Accord is and is not, the repository
-  layout, and the develop guide.
+- [crossben/accordsync](${repo.home}): the source of truth. Facts and code
+  examples on the site are checked against it at build time.
 - [CHANGELOG](${repo.changelog}): releases (latest: v${version.number}).
-- [Architecture decisions](${repo.blob}/docs/adr): why Accord, TypeScript
-  everywhere, merge strategies v1, scope exit, compaction and device TTL.
+- [Architecture decisions](${repo.blob}/docs/adr): every design decision and why.
 - [Licence](${repo.license}): ${licence.accord}.
 
 ## Facts (for accuracy)
 
-- Status: ${status}.
-- Licence: ${licence.accord}. The npm name \`${npmName}\` is used only in code
-  and install commands; the project is called Accord in prose.
-- v1 clients: TypeScript (browser and React Native). A Dart/Flutter client is
-  planned after v1, as are ordered lists and attachments.
-- Merge strategies in v1: \`lww\` (highest HLC wins), \`counter\` (sum of
-  increments, none lost), \`set\` (add-wins), \`conflict\` (both values kept,
-  flagged, the app decides).
-- Sync scopes are enforced on the server; refused ops are reported back to the
-  client. Sync is resumable in pages after days offline.
-- Guarantees on the site are marked Planned until a passing test in the
-  repository proves them. Load-test numbers do not exist yet.
+- Status: ${status}. Licence: ${licence.accord}.
+- Clients: TypeScript (browser and React Native), with React hooks. A
+  Dart/Flutter client, ordered lists and attachments are planned.
+- Guarantees (convergence, no lost increments, conflict() never
+  auto-resolved, idempotent ops, resumable sync, server-side scopes) are each
+  backed by a test in the repository.
+- Load results, with hardware and caveats, are in load/README.md in the
+  repository.
 `;
   return new Response(body, {
     headers: { "Content-Type": "text/plain; charset=utf-8" },

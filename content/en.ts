@@ -319,6 +319,280 @@ export const en: Content = {
     },
   },
 
+  docs: {
+    navLabel: "Docs",
+    headerLink: "Docs",
+    index: {
+      title: "Docs",
+      description:
+        "Accord developer docs: quick start, schema and merge rules, the client, React and React Native, the server, scope rules, the sync protocol and security.",
+      intro:
+        "Everything to build an offline-first app on Accord: the client writes locally and syncs, the self-hosted server merges by your rules. Every code example on these pages is read from the repository at build time, so it matches the published packages.",
+      install: "Start a project in one command:",
+    },
+    sourceLabel: "Source",
+    fromLabel: "from",
+    pages: {
+      quickstart: {
+        title: "Quick start",
+        description:
+          "Create an Accord project, run the server and a device that writes offline then syncs.",
+        intro:
+          "One command creates a working project: a schema, a server configuration, PostgreSQL in Docker Compose, a development token script, and a client.",
+        sections: {
+          create: {
+            title: "Create a project",
+            body: ["Requires Node 22.18 or later and Docker."],
+          },
+          run: {
+            title: "Run it",
+            body: [
+              "Start PostgreSQL and the server, then run the example device: it writes four changes with no network, syncs, and reports zero pending changes.",
+            ],
+          },
+          files: {
+            title: "What you get",
+            body: [],
+            items: [
+              "`schema.ts`: your records and how each field merges, shared by the server and every client.",
+              "`accord.config.ts`: the server, with your scope rules and how tokens are checked.",
+              "`client.ts`: a device writing offline, then syncing.",
+              "`dev-token.mjs`: development tokens. In production your auth server issues them.",
+            ],
+          },
+        },
+      },
+      schema: {
+        title: "Schema and merge rules",
+        description: "Declare how each field merges: lww, counter, set and conflict().",
+        intro:
+          "Every field declares how concurrent edits merge. Whatever order changes arrive in, and however many times, every device reads the same value.",
+        sections: {
+          strategies: { title: "The four strategies", body: [] },
+          define: {
+            title: "Declare a schema",
+            body: [
+              "The same schema file is used by the server and by every client: import it on both sides.",
+            ],
+          },
+          conflicts: {
+            title: "Resolving a conflict()",
+            body: [
+              "A `conflict()` field keeps every value written concurrently and is flagged. Resolving is a write made while seeing every conflicting value: it replaces exactly those. A value written elsewhere that the resolver had not seen is never erased, and keeps the field conflicted until it is resolved too.",
+            ],
+          },
+        },
+      },
+      client: {
+        title: "Client",
+        description:
+          "Open the Accord client, write offline, resolve conflicts and react to events.",
+        intro:
+          "`@accordsync/client` keeps a full working copy of the user's records on the device. Writes apply at once, with no network; sync runs in the background.",
+        sections: {
+          open: {
+            title: "Open and write",
+            body: [
+              "Each write resolves once it is saved on the device, and is visible to `read` at once. `start()` syncs after writes, every 30 seconds, and backs off while offline.",
+            ],
+          },
+          conflicts: {
+            title: "Resolve conflicts",
+            body: ["Show each conflicted field with all its values, and let someone decide."],
+          },
+          events: {
+            title: "Events",
+            body: [
+              "`change` fires when local state changed, `refused` when the server refused a write (already rolled back), `synced` after a sync round, `resync` when the user's data was reloaded, and `error` when a round failed and will be retried.",
+            ],
+          },
+          storage: {
+            title: "Storage",
+            body: [],
+            items: [
+              "`IndexedDbStorage`: browsers.",
+              "`SqliteStorage`: any SQLite through a two-method driver: wa-sqlite on the web, op-sqlite on React Native, `node:sqlite` or better-sqlite3 in Node.",
+              "`MemoryStorage`: tests; unsynced writes are lost on restart.",
+            ],
+          },
+        },
+      },
+      react: {
+        title: "React",
+        description: "React hooks for Accord: useRecord, useRecords, useConflicts, useSyncStatus.",
+        intro:
+          "`@accordsync/react` gives components the device's records, conflicts and sync status, and re-renders them when local state changes, from a local write or from sync.",
+        sections: {
+          hooks: { title: "Provider and hooks", body: [] },
+          rendering: {
+            title: "Re-rendering",
+            body: [
+              "A component re-renders only when what it reads changed: a record that did not change keeps the same value, so React skips it.",
+            ],
+          },
+        },
+      },
+      "react-native": {
+        title: "React Native",
+        description:
+          "Accord on React Native: op-sqlite storage, device ids, and sync around the app lifecycle.",
+        intro:
+          "Field apps usually run on phones. This sets up the client with on-device SQLite, sync that follows the app's lifecycle, and the React hooks.",
+        sections: {
+          install: {
+            title: "Install",
+            body: [
+              "op-sqlite is a native module: on Expo, use a development build. Import the random-values polyfill first: the client needs a secure random source for the device id, and stops with an explanation without one.",
+            ],
+          },
+          open: {
+            title: "Open the client",
+            body: [
+              "Leave `deviceId` unset: the client creates one and stores it. Accord's tables are prefixed `accord_`, so they can share your app's database.",
+            ],
+          },
+          lifecycle: {
+            title: "Sync around the app lifecycle",
+            body: [
+              "Sync in the foreground, pause in the background, and sync at once when the network returns. Writes never wait for any of this.",
+            ],
+          },
+        },
+      },
+      server: {
+        title: "Server",
+        description:
+          "Configure and run the Accord sync server: scopes, auth, environment, workers and compaction.",
+        intro:
+          "`@accordsync/server` is a self-hosted sync server on PostgreSQL. You describe your records and who may see them in a TypeScript file, and run `accord serve`.",
+        sections: {
+          configure: {
+            title: "Configure",
+            body: [
+              "Run it with `accord serve --config accord.config.ts`, or with the Docker image. Production uses `jwksUrl` with an `issuer` and an `audience`.",
+            ],
+          },
+          env: {
+            title: "Environment",
+            body: [],
+            items: [
+              "`ACCORD_DATABASE_URL`: the PostgreSQL connection string (required).",
+              "`ACCORD_PORT`: the HTTP port (default 8080).",
+              "`ACCORD_DB_POOL`: PostgreSQL connections per process (default 20).",
+              "`ACCORD_WORKERS`: server processes sharing the port, a number or `auto` (default 1).",
+            ],
+          },
+          scaling: {
+            title: "Workers and compaction",
+            body: [
+              "Pushes run concurrently, so several worker processes add throughput. Every hour the server folds the history that every device already has into snapshots; `accord compact` does it once.",
+            ],
+          },
+        },
+      },
+      scopes: {
+        title: "Scope rules",
+        description:
+          "Who can read and write which records: how Accord's scopes work, five tested patterns, and the rules that keep them correct.",
+        intro:
+          "Scopes are your access policy: a record belongs to scope keys computed from its fields, and each user may read and write some keys. A user sees a record when they share a key.",
+        sections: {
+          how: {
+            title: "How scopes work",
+            body: [
+              "An existing record accepts a write when its current keys overlap the user's write keys; a new record, when the keys it would have after the write do. When a write moves a record, devices that can no longer see it delete it; devices that now can get its whole history.",
+            ],
+          },
+          patterns: {
+            title: "Patterns",
+            body: [
+              "The repository has five patterns with tests: personal, field team, supervisor, multi-tenant and shared lists. Three of them:",
+            ],
+          },
+          rules: {
+            title: "Rules that keep scopes correct",
+            body: [],
+            items: [
+              "Fail closed: a record with no keys is visible to nobody.",
+              "Keep scope functions pure: no clock, randomness, network or database.",
+              "Put the scoping field in the record's first write.",
+              "Claims are read on every request: use short token lifetimes to revoke access quickly.",
+              "Test scopes like code: one user who should see a record, one who should not.",
+            ],
+          },
+        },
+      },
+      protocol: {
+        title: "Sync protocol",
+        description: "Accord's HTTP sync protocol, version 1: push, pull, resync and errors.",
+        intro:
+          "Clients and the server talk over HTTPS with JSON. Every request carries the user's token and the device id; JSON Schemas for every message are in the repository.",
+        sections: {
+          push: {
+            title: "Push",
+            body: [
+              "Send the outbox in write order. Acknowledged ops leave the outbox; refused ops, each with a reason, are rolled back on the device. Resending a batch is always safe.",
+            ],
+          },
+          pull: {
+            title: "Pull",
+            body: [
+              "Start from cursor 0, apply every item, store the cursor, and pull again while `has_more` is true. `device_seq` tells the device where its own op numbers are, so an op id is never reused.",
+            ],
+          },
+          resync: {
+            title: "Resync",
+            body: [
+              "When a user's scopes change, the next page brings the records that entered and removes the ones that left. Only a very large change, or a device back after a long absence, gets this answer instead.",
+            ],
+          },
+          errors: {
+            title: "Errors",
+            body: [],
+            items: [
+              "`400`: malformed request.",
+              "`401`: missing or invalid token.",
+              "`403`: the device id belongs to another user.",
+              "`429`: rate limit; wait for `Retry-After`.",
+              "`500`: server error; retry with backoff (pushes are idempotent).",
+            ],
+          },
+        },
+      },
+      security: {
+        title: "Security",
+        description: "What the Accord server enforces, and what to configure when you deploy it.",
+        intro:
+          "The server enforces authorisation on every push and pull. A few things remain yours to configure when you deploy it.",
+        sections: {
+          enforced: {
+            title: "Enforced by the server",
+            body: [],
+            items: [
+              "Every sync request needs a verified JWT; scopes filter every pull and check every pushed op.",
+              "A device id is bound to its first user; a device can only push its own ops.",
+              "Re-pushed ops are never applied twice; a reused op id is refused, never silently acknowledged.",
+              "Clocks far in the future are refused; the history is append-only, enforced by PostgreSQL.",
+              "Request size and rate are limited (413 and 429).",
+            ],
+          },
+          deploy: {
+            title: "Your part when deploying",
+            body: [],
+            items: [
+              "Use `jwksUrl` with `issuer` and `audience`, never the development secret.",
+              "Terminate TLS in front of Accord.",
+              "Restrict CORS to your app's origins.",
+              "Back up PostgreSQL and restrict network access to it.",
+              "Encrypt sensitive data on devices: Accord does not encrypt local storage.",
+            ],
+          },
+        },
+      },
+    },
+    homeLinks: { code: "Read the client docs", run: "Read the quick start" },
+  },
+
   footer: {
     tagline: "Built for networks that lie.",
     statusLine: "v{version}, released {date}. Pre-1.0.",

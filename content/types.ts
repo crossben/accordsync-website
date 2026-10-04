@@ -2,6 +2,7 @@
 // in content/en.ts and content/fr.ts, both typed by this interface, so a
 // missing or extra French string fails `npm run typecheck`. No i18n library.
 import type { GuaranteeKey, StrategyId } from "@/content/facts";
+import type { DocsSlug } from "@/lib/docsPages";
 
 export type PlannedBadge = {
   /** Visible badge label, e.g. "Planned" / "À venir". */
@@ -171,6 +172,27 @@ export type Content = {
     contribute: { title: string; body: string };
     security: { title: string; body: string };
     roadmap: { title: string; body: string };
+  };
+
+  /** The developer docs (/docs/…): prose only; every code block comes from the repository. */
+  docs: {
+    navLabel: string;
+    /** Header link to the docs. */
+    headerLink: string;
+    index: { title: string; description: string; intro: string; install: string; note?: string };
+    sourceLabel: string;
+    fromLabel: string;
+    pages: Record<
+      DocsSlug,
+      {
+        title: string;
+        description: string;
+        intro: string;
+        sections: Record<string, { title: string; body: string[]; items?: string[] }>;
+      }
+    >;
+    /** Links from the home page into the docs. */
+    homeLinks: { code: string; run: string };
   };
 
   footer: {

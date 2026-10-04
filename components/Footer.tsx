@@ -8,9 +8,10 @@ export default function Footer({ content }: { content: Content }) {
   const links: { label: string; href: string }[] = [
     { label: content.footer.linkLabels.github, href: repo.home },
   ];
-  if (features.repoLinks.docs) {
-    links.push({ label: content.footer.linkLabels.docs, href: `${repo.blob}/docs` });
-  }
+  links.push({
+    label: content.footer.linkLabels.docs,
+    href: content.lang === "en" ? "/docs/" : "/fr/docs/",
+  });
   if (features.repoLinks.changelog) {
     links.push({ label: content.footer.linkLabels.changelog, href: repo.changelog });
   }

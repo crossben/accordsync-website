@@ -133,39 +133,43 @@ export type Content = {
     terminalNote: string;
   };
 
-  /** The playground (website.md section 5.7, showcase.md): the real core and simulator in the page. */
+  /** The playground (website.md section 5.7, showcase.md): two phones running a field app on the
+   *  real core and simulator. Status values stay in English in the data; `statuses` labels them. */
   playground: {
     heading: string;
     intro: string;
     noscript: string;
     loading: string;
-    device: string;
-    server: string;
-    online: string;
-    offline: string;
-    unsynced: string;
-    opsOnServer: string;
-    fields: { name: string; visits: string; documents: string; status: string };
-    actions: {
-      visit: string;
-      rename: string;
+    agents: [string, string];
+    airplane: string;
+    app: {
+      name: string;
+      dossier: string;
+      client: string;
+      visits: string;
+      addVisit: string;
+      documents: string;
       addDoc: string;
-      removeDoc: string;
+      status: string;
+      statuses: { draft: string; approved: string; rejected: string };
       approve: string;
       reject: string;
+      offline: string;
+      pending: string;
+      synced: string;
+      conflictTitle: string;
+      conflictBody: string;
       keep: string;
     };
-    none: string;
-    outcome: {
-      waiting: string;
-      identical: string;
-      conflicted: string;
-    };
+    server: { title: string; stored: string };
+    steps: { title: string; items: [string, string, string, string]; allDone: string };
     faults: {
+      title: string;
       run: string;
       rerun: string;
       reset: string;
       result: string;
+      identical: string;
       diverged: string;
     };
     announce: { online: string; offline: string };

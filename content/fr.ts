@@ -256,43 +256,56 @@ export const fr: Content = {
   playground: {
     heading: "Essayer",
     intro:
-      "Trois appareils et un serveur, avec les vrais @accordsync/core et simulateur, dans votre navigateur ; aucun serveur n'est sollicité. Mettez un appareil hors ligne, modifiez le même dossier sur deux d'entre eux, puis reconnectez-les.",
+      "Deux agents de terrain, un dossier client, pas de réseau. Ces téléphones font tourner le vrai @accordsync/core dans votre navigateur : coupez le réseau, mettez les deux agents en désaccord, et regardez ce que fait Accord.",
     noscript:
-      "Le bac à sable a besoin de JavaScript. L'exemple d'appli de terrain du dépôt montre la même chose avec un vrai serveur.",
-    loading: "Chargement du bac à sable…",
-    device: "Appareil",
-    server: "Serveur",
-    online: "En ligne",
-    offline: "Hors ligne",
-    unsynced: "{n} non synchronisé(s)",
-    opsOnServer: "{n} opérations au journal",
-    fields: { name: "Client", visits: "Visites", documents: "Documents", status: "Statut" },
-    actions: {
-      visit: "+1 visite",
-      rename: "Renommer",
-      addDoc: "Ajouter cni.pdf",
-      removeDoc: "Retirer cni.pdf",
+      "La démo a besoin de JavaScript. L'exemple d'appli de terrain du dépôt montre la même chose avec un vrai serveur.",
+    loading: "Chargement de la démo…",
+    agents: ["Awa", "Moussa"],
+    airplane: "Mode avion",
+    app: {
+      name: "Terrain",
+      dossier: "Dossier client n° 91",
+      client: "Aminata Fall",
+      visits: "Visites",
+      addVisit: "+ Visite",
+      documents: "Documents",
+      addDoc: "+ Pièce d'identité",
+      status: "Décision",
+      statuses: { draft: "Brouillon", approved: "Approuvé", rejected: "Rejeté" },
       approve: "Approuver",
       reject: "Rejeter",
+      offline: "Pas de réseau : enregistré sur le téléphone",
+      pending: "{n} en attente de sync",
+      synced: "Synchronisé",
+      conflictTitle: "Les agents ne sont pas d'accord",
+      conflictBody: "Accord a gardé les deux décisions. Laquelle est la bonne ?",
       keep: "Garder « {value} »",
     },
-    none: "—",
-    outcome: {
-      waiting:
-        "Des appareils sont hors ligne ou ont des changements non synchronisés : les répliques peuvent différer jusqu'à la sync.",
-      identical: "Toutes les répliques sont identiques.",
-      conflicted:
-        "Statut en conflit : {values}. Accord a gardé chaque valeur : votre appli tranche.",
+    server: { title: "Serveur", stored: "{n} modifications" },
+    steps: {
+      title: "À essayer",
+      items: [
+        "Passez le téléphone de Moussa en mode avion",
+        "Approuvez sur celui d'Awa, rejetez sur celui de Moussa, ajoutez une visite sur les deux",
+        "Coupez le mode avion : les deux visites comptent, les deux décisions sont gardées",
+        "Choisissez la bonne décision : tous les téléphones sont d'accord",
+      ],
+      allDone: "C'est ça, Accord : rien de perdu, rien de deviné.",
     },
     faults: {
-      run: "Pannes aléatoires",
+      title: "Test de résistance",
+      run: "Simuler un mauvais réseau",
       rerun: "Rejouer la graine {seed}",
-      reset: "Réinitialiser",
+      reset: "Recommencer",
       result:
-        "Graine {seed} : {ops} écritures sur 3 appareils, {dropped} messages perdus, {duplicated} dupliqués, {partitions} coupures. Une fois le réseau rétabli : {verdict}",
-      diverged: "les répliques diffèrent. Cela ne devrait jamais arriver : signalez la graine.",
+        "Graine {seed} : {ops} modifications sur 3 téléphones, {dropped} messages perdus, {duplicated} dupliqués, {partitions} coupures réseau. Une fois le réseau revenu : {verdict}",
+      identical: "tous les téléphones identiques.",
+      diverged: "les téléphones diffèrent. Cela ne devrait jamais arriver : signalez la graine.",
     },
-    announce: { online: "{device} est en ligne.", offline: "{device} est hors ligne." },
+    announce: {
+      online: "Le téléphone de {agent} est en ligne.",
+      offline: "Le téléphone de {agent} est en mode avion.",
+    },
   },
 
   proof: {

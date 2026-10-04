@@ -29,5 +29,6 @@
     "build": "node --check index.mjs",
     "typecheck": "node --check index.mjs",
     "test": "node --test test/scaffold.test.mjs"
-  }
+  },
+  "homepage": "https://accord.benhattab.pro/docs/quickstart/"
 }

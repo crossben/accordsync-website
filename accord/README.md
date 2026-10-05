@@ -85,6 +85,7 @@ Start a project in one command: `npm create accord my-app`.
 | [docs/client.md](docs/client.md)              | Writes, conflicts, events, storage                                |
 | [@accordsync/react](packages/react/README.md) | `useRecord`, `useConflicts`, `useSyncStatus`                      |
 | [docs/react-native.md](docs/react-native.md)  | op-sqlite storage, background-friendly sync                       |
+| [docs/flutter.md](docs/flutter.md)            | Dart and Flutter packages: drift storage, widgets, lifecycle      |
 | [docs/scopes.md](docs/scopes.md)              | Tested scope patterns: personal, team, supervisor, tenant, shared |
 
 ## Repository layout

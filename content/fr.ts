@@ -531,6 +531,45 @@ export const fr: Content = {
           },
         },
       },
+      flutter: {
+        title: "Flutter",
+        description:
+          "Accord pour Flutter et Dart : stockage drift, widgets, et synchronisation qui suit le cycle de vie de l'app.",
+        intro:
+          "Les packages Dart parlent le même protocole et fusionnent selon les mêmes règles que les packages TypeScript : les téléphones Flutter se synchronisent avec le même serveur que les appareils web et React Native. `accordsync_flutter` ajoute le stockage drift, les widgets et la gestion du cycle de vie au client Dart pur `accordsync`.",
+        sections: {
+          install: {
+            title: "Installation",
+            body: [
+              "`accordsync_flutter` réexporte le client et le cœur de fusion. `drift_flutter` ouvre la base SQLite sur l'appareil.",
+            ],
+          },
+          open: {
+            title: "Ouvrir le client",
+            body: [
+              "Déclarez le même schéma que sur le serveur. Laissez `deviceId` vide : le client en crée un avec une source aléatoire sûre et le garde. Pour mettre Accord dans la base drift existante de votre app, passez-la à `DriftStorage` : Accord ajoute quatre tables préfixées `accord_`, sans génération de code.",
+            ],
+          },
+          lifecycle: {
+            title: "Synchroniser selon le cycle de vie",
+            body: [
+              "`AccordLifecycle` synchronise au premier plan, s'arrête en arrière-plan et synchronise dès que le réseau revient. Accord ne dépend d'aucun package de connectivité : donnez-lui un flux venant de celui que vous utilisez déjà. Les écritures n'attendent jamais tout cela.",
+            ],
+          },
+          widgets: {
+            title: "Widgets",
+            body: [
+              "`RecordBuilder` se reconstruit quand son enregistrement change sur l'appareil, par une écriture locale ou par la synchronisation. `ConflictsBuilder` donne chaque champ en conflit avec ses valeurs, à trancher avec `accord.resolve`. `SyncStatusBuilder` donne les écritures en attente et la dernière synchronisation. Les écritures refusées arrivent sur `accord.refusals`, déjà annulées.",
+            ],
+          },
+          parity: {
+            title: "Le même comportement qu'en TypeScript",
+            body: [
+              "Le cœur Dart passe les vecteurs de référence partagés dans tous les ordres de livraison, et reproduit octet pour octet les instantanés de scénarios aléatoires générés par le cœur TypeScript. En CI, des clients Dart et TypeScript travaillent ensemble contre le vrai serveur, sur un réseau qui perd requêtes et réponses, et doivent finir avec des données identiques.",
+            ],
+          },
+        },
+      },
       server: {
         title: "Serveur",
         description:

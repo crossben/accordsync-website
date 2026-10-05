@@ -38,6 +38,15 @@ export const DOC_SNIPPETS = {
   "rn.open": { file: "docs/react-native.md", marker: "export async function openAccord(" },
   "rn.lifecycle": { file: "docs/react-native.md", marker: "export function useAccordLifecycle(" },
 
+  // Flutter
+  "flutter.install": {
+    file: "docs/flutter.md",
+    marker: "flutter pub add accordsync_flutter drift_flutter",
+  },
+  "flutter.open": { file: "docs/flutter.md", marker: "Future<AccordClient> openAccord(" },
+  "flutter.lifecycle": { file: "docs/flutter.md", marker: "child: AccordLifecycle(" },
+  "flutter.widgets": { file: "docs/flutter.md", marker: "record: 'dossier:91'," },
+
   // Server
   "server.define": { file: "README.md", marker: "export default defineServer({" },
 
@@ -70,6 +79,7 @@ export const DOC_SOURCES = [
   "docs/client.md",
   "packages/react/README.md",
   "docs/react-native.md",
+  "docs/flutter.md",
   "README.md",
   "docs/scopes.md",
   "docs/protocol.md",

@@ -61,6 +61,17 @@ export const docsPages = [
     ],
   },
   {
+    slug: "flutter",
+    source: "docs/flutter.md",
+    sections: [
+      { key: "install", snippets: ["flutter.install"] },
+      { key: "open", snippets: ["flutter.open"] },
+      { key: "lifecycle", snippets: ["flutter.lifecycle"] },
+      { key: "widgets", snippets: ["flutter.widgets"] },
+      { key: "parity" },
+    ],
+  },
+  {
     slug: "server",
     source: "README.md",
     sections: [

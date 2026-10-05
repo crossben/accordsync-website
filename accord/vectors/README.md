@@ -35,3 +35,11 @@ long cases, many orders), with duplicates, and must read exactly `expected`:
   `opId`.
 
 Never edit an existing case. Add new ones.
+
+## Random vectors
+
+`random/cases.json` is generated, not hand-written: seeded scenarios with awkward values
+(integer-like keys, `\u2028`, lone surrogates, `1e+21`, mixed-case device ids), each with its ops and
+the canonical snapshot this core reads. Other implementations must reproduce every snapshot byte for
+byte. `packages/core/src/random-vectors.test.ts` regenerates the file and fails if it differs;
+rewrite it with `ACCORD_WRITE_VECTORS=1 pnpm --filter @accordsync/core test`.

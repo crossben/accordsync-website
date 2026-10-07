@@ -1,6 +1,7 @@
 packages:
   - packages/*
   - examples/field-app
+  - conformance
 
 # Only esbuild (used by tsup/vitest) may run install scripts; the rest are optional native addons.
 allowBuilds:

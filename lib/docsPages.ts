@@ -72,6 +72,30 @@ export const docsPages = [
     ],
   },
   {
+    slug: "php",
+    source: "docs/php.md",
+    sections: [
+      { key: "install", snippets: ["php.install"] },
+      { key: "define", snippets: ["php.define"] },
+      { key: "frameworks" },
+      { key: "migrate", snippets: ["php.migrate"] },
+      { key: "parity" },
+    ],
+  },
+  {
+    slug: "python",
+    source: "docs/python.md",
+    sections: [
+      { key: "install", snippets: ["python.install"] },
+      { key: "open", snippets: ["python.open"] },
+      { key: "conflicts", snippets: ["python.conflicts"] },
+      { key: "server", snippets: ["python.fastapi"] },
+      { key: "django", snippets: ["python.django"] },
+      { key: "migrate", snippets: ["python.migrate"] },
+      { key: "parity" },
+    ],
+  },
+  {
     slug: "server",
     source: "README.md",
     sections: [

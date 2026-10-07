@@ -43,3 +43,28 @@ Never edit an existing case. Add new ones.
 the canonical snapshot this core reads. Other implementations must reproduce every snapshot byte for
 byte. `packages/core/src/random-vectors.test.ts` regenerates the file and fails if it differs;
 rewrite it with `ACCORD_WRITE_VECTORS=1 pnpm --filter @accordsync/core test`.
+
+## op_hash vectors
+
+`op-hash/op-hash.json` pins the hash a server stores for each op folded by compaction
+(`compacted_ops.op_hash`, ADR-0010): SHA-256, lowercase hex, of the UTF-8 bytes of the canonical
+JSON of the op's wire form. Every server shares the database, so every server must compute it byte
+for byte the same.
+
+```jsonc
+{
+  "version": 1,
+  "cases": [
+    { "name": "…", "op": {/* wire op */}, "canonical": "{\"deps\":[],…}", "hash": "<64 hex>" },
+  ],
+}
+```
+
+For each case an implementation parses `op` (one case holds a literal `-0`, which must be read as
+the number zero and written `0`), decodes and re-encodes it as its server stores it (unchanged for
+these ops), and must produce exactly `canonical` and `hash`. Cases cover every op kind, `deps`
+present and absent, non-ASCII, an emoji, U+E000/U+FFEF keys, integer-like keys (JavaScript order:
+array-index keys first, ascending), `1e+21`, `1e-7`, `-0`, nested objects, `{}` vs `[]`, `null` and
+escapes. `packages/server/test/op-hash-vectors.test.ts` regenerates the file and fails if it differs;
+rewrite it with `ACCORD_WRITE_VECTORS=1 pnpm --filter @accordsync/server test`. It lives in a
+subfolder so the strategy vectors above stay the only top-level files.

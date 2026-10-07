@@ -5,3 +5,4 @@ LICENSE
 protocol/
 packages/create-accord/template/
 vectors/random/
+vectors/op-hash/

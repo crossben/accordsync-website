@@ -44,6 +44,10 @@ const STRINGS = [
   '\ud800',
   '10',
   '9',
+  // Private-use and U+FFFx: above every surrogate in code points, below them in UTF-16 code units.
+  // With '😀' they catch any port sorting by code point or by UTF-8 bytes instead of UTF-16.
+  '\ue000',
+  '\uffef',
 ];
 
 function mulberry32(seed: number) {

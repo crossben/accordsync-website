@@ -30,6 +30,20 @@ jobs:
           ACCORD_PROPERTY_RUNS: '2000'
           ACCORD_SIM_RUNS: '3000'
 
+  # Black-box server conformance suite (conformance/): PostgreSQL through Testcontainers, the
+  # reference server as a separate process, every request over HTTP.
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm conformance
+
   image:
     runs-on: ubuntu-latest
     needs: build-test

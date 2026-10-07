@@ -47,6 +47,19 @@ export const DOC_SNIPPETS = {
   "flutter.lifecycle": { file: "docs/flutter.md", marker: "child: AccordLifecycle(" },
   "flutter.widgets": { file: "docs/flutter.md", marker: "record: 'dossier:91'," },
 
+  // PHP
+  "php.install": { file: "docs/php.md", marker: "php artisan vendor:publish --tag=accord-config" },
+  "php.define": { file: "docs/php.md", marker: "final class Definition" },
+  "php.migrate": { file: "docs/php.md", marker: "php artisan accord:migrate" },
+
+  // Python
+  "python.install": { file: "docs/python.md", marker: "pip install accordsync-fastapi uvicorn" },
+  "python.open": { file: "docs/python.md", marker: "accord = AccordClient.open(" },
+  "python.conflicts": { file: "docs/python.md", marker: "for c in accord.conflicts():" },
+  "python.fastapi": { file: "docs/python.md", marker: "app.include_router(accord_router(" },
+  "python.django": { file: "docs/python.md", marker: '"accordsync_django"]' },
+  "python.migrate": { file: "docs/python.md", marker: "python manage.py accord_migrate" },
+
   // Server
   "server.define": { file: "README.md", marker: "export default defineServer({" },
 
@@ -80,6 +93,8 @@ export const DOC_SOURCES = [
   "packages/react/README.md",
   "docs/react-native.md",
   "docs/flutter.md",
+  "docs/php.md",
+  "docs/python.md",
   "README.md",
   "docs/scopes.md",
   "docs/protocol.md",

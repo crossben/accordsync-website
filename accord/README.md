@@ -5,7 +5,7 @@
 Apps keep working with no connection. When it comes back, Accord passes every change along, and
 every device ends up with the same data. Every device, in accord.
 
-> **Status: v0.2.0.** Pre-1.0: the API may still change between minor versions.
+> **Status: v0.3.0.** Pre-1.0: the API may still change between minor versions.
 > Design decisions are recorded in [`docs/adr/`](docs/adr/).
 
 ## What it will be
@@ -86,7 +86,10 @@ Start a project in one command: `npm create accord my-app`.
 | [@accordsync/react](packages/react/README.md) | `useRecord`, `useConflicts`, `useSyncStatus`                      |
 | [docs/react-native.md](docs/react-native.md)  | op-sqlite storage, background-friendly sync                       |
 | [docs/flutter.md](docs/flutter.md)            | Dart and Flutter packages: drift storage, widgets, lifecycle      |
+| [docs/php.md](docs/php.md)                    | PHP server for Laravel, Symfony or plain PHP (PSR-15)             |
+| [docs/python.md](docs/python.md)              | Python client, and the server for FastAPI or Django               |
 | [docs/scopes.md](docs/scopes.md)              | Tested scope patterns: personal, team, supervisor, tenant, shared |
+| [conformance/](conformance/README.md)         | Server conformance suite: run it against any Accord server        |
 
 ## Repository layout
 
@@ -97,6 +100,7 @@ Start a project in one command: `npm create accord my-app`.
 | `packages/server`    | Sync server: Hono + PostgreSQL                                      |
 | `packages/simulator` | Deterministic network and device simulator                          |
 | `vectors/`           | Golden test vectors every implementation must pass                  |
+| `conformance/`       | Black-box HTTP suite every server implementation must pass          |
 | `docs/adr/`          | Architecture decision records                                       |
 
 ## Develop
@@ -109,6 +113,7 @@ pnpm install
 pnpm build
 pnpm test            # server tests start PostgreSQL 16 with Testcontainers
 pnpm lint && pnpm typecheck
+pnpm conformance     # black-box server conformance suite (conformance/README.md)
 
 # Convergence suite: more cases, or replay one failing seed exactly
 ACCORD_SIM_RUNS=5000 pnpm --filter @accordsync/simulator test

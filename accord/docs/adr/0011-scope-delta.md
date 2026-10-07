@@ -32,3 +32,43 @@ answers `resync_required`: past that size a full reload is cheaper.
 
 - No protocol change: the delta uses the existing `op`, `snapshot` and `exit` items.
 - Retired devices (ADR-0005) still resync.
+
+## Update (2026-10-07): a delta stays pending until it is received
+
+The PHP and Python mixed-server fleets found that a lost answer lost the delta for good: the server
+saved the device's new read keys in the same transaction as the pull that carried the delta, so the
+retried pull (same cursor) saw no change. The delta is now kept pending until the device shows it has
+the answer. No client or protocol change.
+
+Migration `0007_pending_scope_delta` adds two nullable columns to `devices`: `delta_keys text[]`
+(the read keys **before** the pending delta) and `delta_cursor bigint` (the cursor the delta was
+pulled from). Both are null or both are set. A pull from `cursor`, with the caller's normalized read
+keys `read` (sorted, without duplicates), does this inside its repeatable-read transaction, after the
+`needs_resync` check:
+
+1. **Pending?** If `delta_keys` is set and `cursor > 0`:
+   - `cursor <= delta_cursor`: a **retry** of the lost answer. `before = delta_keys`.
+   - `cursor > delta_cursor`: the device received it (only an answer at or after the delta gives it
+     a cursor above `delta_cursor`). `before = read_keys` (as without a pending delta).
+2. Otherwise `before = read_keys` (or `[]` when null).
+3. If `cursor > 0` and `before` differs from `read` (as sets): compute the delta from `before` to
+   `read` from current scopes, as above. Over `maxScopeDelta`: answer `resync_required` and change
+   nothing. Else send it, and save `read_keys = read`, `delta_keys = before`, and `delta_cursor =`
+   the old `delta_cursor` on a retry, `cursor` otherwise.
+4. If no delta is sent and one was pending (received, or a retry whose keys are back to
+   `delta_keys`): save `read_keys = read`, `delta_keys = null`, `delta_cursor = null`.
+5. A pull from `cursor = 0` saves `read_keys = read`, `needs_resync = false`, `delta_keys = null`,
+   `delta_cursor = null` (it sends everything anyway).
+
+`devices.cursor` (the compaction watermark) still moves to `greatest(cursor, request cursor)`; the
+delta is computed from the records' full history (snapshots included), so compaction never makes a
+pending delta incomplete. Two simultaneous pulls of one device collide on the `devices` row
+(40001) and one is retried, as before.
+
+**It terminates.** The answer to a delta pull carries a cursor above the request cursor whenever the
+feed moved, and in practice even when it is idle: every pull writes the `devices` row and so takes a
+transaction id, which moves the next pull's horizon past it. Only while an older transaction stays
+open can the returned cursor equal the request cursor; the next pull then resends the delta once
+more, which is harmless (ops and snapshots are idempotent, an exit for an absent record does
+nothing), and the first pull whose cursor has moved clears it. Claims that change again while a
+delta is pending are folded into one delta from `delta_keys`, so nothing is lost either way.

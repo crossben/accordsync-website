@@ -383,7 +383,7 @@ export const fr: Content = {
     },
     roadmap: {
       title: "Feuille de route",
-      body: "Après la v1 : un client Dart/Flutter, des listes ordonnées avec leurs preuves, des pièces jointes reprises au téléversement. Une petite v1 prouvablement correcte vaut mieux qu'une grande qui fonctionne à peu près.",
+      body: "Ensuite : des listes ordonnées avec leurs preuves, des pièces jointes reprises au téléversement. Une petite v1 prouvablement correcte vaut mieux qu'une grande qui fonctionne à peu près.",
     },
   },
 
@@ -566,6 +566,97 @@ export const fr: Content = {
             title: "Le même comportement qu'en TypeScript",
             body: [
               "Le cœur Dart passe les vecteurs de référence partagés dans tous les ordres de livraison, et reproduit octet pour octet les instantanés de scénarios aléatoires générés par le cœur TypeScript. En CI, des clients Dart et TypeScript travaillent ensemble contre le vrai serveur, sur un réseau qui perd requêtes et réponses, et doivent finir avec des données identiques.",
+            ],
+          },
+        },
+      },
+      php: {
+        title: "PHP",
+        description:
+          "Le serveur de sync Accord en PHP, pour Laravel, Symfony ou PHP sans framework : même protocole, mêmes règles de fusion, même schéma PostgreSQL.",
+        intro:
+          "Le serveur PHP parle le même protocole, fusionne selon les mêmes règles et utilise le même schéma PostgreSQL que `@accordsync/server` : tous les clients Accord se synchronisent avec lui sans changement. Servez la sync depuis votre backend Laravel ou Symfony : `accordsync/laravel` et `accordsync/symfony` branchent `accordsync/server`, indépendant de tout framework, dans le framework. PHP 8.3+ avec `pdo_pgsql`.",
+        sections: {
+          install: {
+            title: "Installation",
+            body: [
+              "Avec Symfony, installez `accordsync/symfony` ; en PHP sans framework ou avec un autre framework, `accordsync/server`. Laravel découvre le provider tout seul et publie `config/accord.php`.",
+            ],
+          },
+          define: {
+            title: "Définir le serveur",
+            body: [
+              "`AccordServer::define()` prend les mêmes éléments que `defineServer` en TypeScript : le schéma, une fonction de scope par type d'enregistrement, les accès qu'un utilisateur tire de ses claims JWT, et la vérification des tokens. Dans Laravel, `config/accord.php` désigne une classe invocable qui la renvoie ; le conteneur injecte ses paramètres, ici le cache qui partage le JWKS entre les workers.",
+            ],
+          },
+          frameworks: {
+            title: "Routes et frameworks",
+            body: [
+              "Les routes sont `/accord/health`, `/accord/v1/push` et `/accord/v1/pull` (le préfixe se configure) : les clients utilisent `https://votre-app/accord` comme URL de serveur. Elles sont stateless et s'authentifient uniquement par le bearer token : ni session, ni cookie, ni token CSRF.",
+              "Dans Symfony, la même définition va dans un service qui implémente `Accord\\Symfony\\DefinitionProvider`, et un import de routes avec `type: accord` ajoute les routes. Sans framework, `AccordServer::handler()` renvoie un request handler PSR-15.",
+            ],
+          },
+          migrate: {
+            title: "Migrations et compaction",
+            body: [
+              "Les migrations sont celles du serveur TypeScript, dans le même registre : une base migrée par l'un des serveurs est à jour pour l'autre. Laravel inscrit la compaction dans son scheduler ; avec Symfony ou sans framework, lancez-la depuis cron (`bin/console accord:compact`, `vendor/bin/accord compact`). Utilisez une connexion persistante à la base, et un stockage des limites de débit partagé par tous les serveurs.",
+            ],
+          },
+          parity: {
+            title: "Le même comportement qu'en TypeScript",
+            body: [
+              "Le cœur PHP passe les vecteurs de référence partagés dans tous les ordres de livraison, et reproduit octet pour octet les instantanés de scénarios aléatoires générés par le cœur TypeScript. En CI, la suite de conformité serveur tourne contre le serveur PHP et ses applis d'exemple Laravel et Symfony, et une flotte mixte fait tourner les serveurs TypeScript et PHP sur une même base en même temps, avec des appareils qui envoient chaque requête à l'un ou l'autre sur un réseau qui perd requêtes et réponses. Chaque appareil doit finir avec des données identiques.",
+            ],
+          },
+        },
+      },
+      python: {
+        title: "Python",
+        description:
+          "Accord pour Python : un client qui écrit hors ligne puis se synchronise, et le serveur de sync pour FastAPI et Django.",
+        intro:
+          "Le client Python fait d'un programme un appareil Accord : il écrit tout de suite dans SQLite et se synchronise comme un téléphone ou un navigateur. Le serveur Python parle le même protocole, fusionne selon les mêmes règles et utilise le même schéma PostgreSQL que `@accordsync/server` : tous les clients Accord se synchronisent avec lui sans changement. Python 3.11+.",
+        sections: {
+          install: {
+            title: "Installation",
+            body: [
+              "`accordsync` est le client. `accordsync-fastapi` et `accordsync-django` s'appuient sur `accordsync-server`, indépendant de tout framework, qui sert aussi du WSGI tout seul.",
+            ],
+          },
+          open: {
+            title: "Ouvrir le client",
+            body: [
+              "Déclarez le même schéma que sur le serveur. Laissez `device_id` vide : le client en crée un avec une source aléatoire sûre et le garde. `get_token` renvoie le JWT courant de votre appli, et il est appelé avant chaque requête. Les écritures rendent la main dès qu'elles sont enregistrées sur l'appareil, en ligne ou non. `set_()` prend un tiret bas final pour ne pas masquer le `set` de Python.",
+            ],
+          },
+          conflicts: {
+            title: "Conflits et refus",
+            body: [
+              "`accord.conflicts()` donne chaque champ en conflit avec ses valeurs ; tranchez avec `accord.resolve`. L'événement `change` signale les enregistrements dont l'état local a changé, par une écriture locale ou par la synchronisation. Les écritures refusées arrivent par l'événement `refused`, déjà annulées : prévenez l'utilisateur.",
+            ],
+          },
+          server: {
+            title: "Définir le serveur",
+            body: [
+              "`define_server()` prend les mêmes éléments que `defineServer` en TypeScript : le schéma, une fonction de scope par type d'enregistrement, les accès qu'un utilisateur tire de ses claims JWT, et la vérification des tokens. `accord_router` le monte dans FastAPI ; le router ouvre son pool de connexions dans le lifespan de l'application et le ferme à l'arrêt.",
+            ],
+          },
+          django: {
+            title: "Django",
+            body: [
+              "La base est `ACCORD_DATABASE_URL`, sinon la base `default` sur PostgreSQL. Les vues de sync utilisent leur propre pool psycopg, jamais les connexions de l'ORM ; elles sont exemptées de CSRF et n'ont besoin d'aucune session. `manage.py check` signale un `ACCORD_SERVER` absent ou incorrect. Servez avec un serveur WSGI multi-thread.",
+            ],
+          },
+          migrate: {
+            title: "Migrations et compaction",
+            body: [
+              "Les migrations sont celles du serveur TypeScript, dans le même registre : une base migrée par l'un des serveurs est à jour pour l'autre. Par défaut, chaque processus serveur compacte dans un thread en arrière-plan ; avec plusieurs processus workers, désactivez-le et lancez la compaction depuis cron. Les limites de débit sont gardées en mémoire, par processus.",
+            ],
+          },
+          parity: {
+            title: "Le même comportement qu'en TypeScript",
+            body: [
+              "Le cœur Python passe les vecteurs de référence partagés dans tous les ordres de livraison, et reproduit octet pour octet les instantanés de scénarios aléatoires générés par le cœur TypeScript. En CI, la suite de conformité serveur tourne contre le serveur Python et ses applis d'exemple FastAPI et Django ; le client Python tourne contre le vrai serveur TypeScript, seul et avec des appareils TypeScript ; et une flotte mixte fait tourner les serveurs TypeScript et Python sur une même base en même temps, sur un réseau qui perd requêtes et réponses. Chaque appareil doit finir avec des données identiques.",
             ],
           },
         },

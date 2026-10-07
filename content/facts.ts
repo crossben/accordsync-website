@@ -34,10 +34,10 @@ export const repo = {
 } as const;
 
 /**
- * Version. Source: app/CHANGELOG.md ("## [0.2.0] - 2026-10-03") and app/README.md's status note
- * ("Status: v0.2.0"). check-facts.mjs fails the build if either changes.
+ * Version. Source: app/CHANGELOG.md ("## [0.3.0] - 2026-10-07") and app/README.md's status note
+ * ("Status: v0.3.0"). check-facts.mjs fails the build if either changes.
  */
-export const version = { number: "0.2.0", date: "2026-10-03" } as const;
+export const version = { number: "0.3.0", date: "2026-10-07" } as const;
 
 /**
  * Licence. Source: app/README.md ("## Licence" → "[Apache-2.0](LICENSE)") and
@@ -135,10 +135,10 @@ export const screenshot = {
   example: `${REPO_BASE}/tree/main/examples/field-app`,
 } as const;
 
-/** Clients (website.md section 4 / plan.md section 2). Dart/Flutter only as a roadmap line. */
+/** Implementations: clients and servers, each documented in the Accord repository's docs/. */
 export const clients = {
-  v1: "TypeScript (browser + React Native)",
-  planned: "Dart/Flutter client after v1",
+  clients: "TypeScript (browser + React Native), Dart/Flutter, Python",
+  servers: "TypeScript (Node), PHP (Laravel, Symfony), Python (FastAPI, Django)",
 } as const;
 
 /**

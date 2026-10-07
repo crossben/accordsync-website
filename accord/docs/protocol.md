@@ -48,7 +48,8 @@ forget old duplicates ([ADR-0010](adr/0010-concurrent-pushes.md)). The response:
 - **acked**: applied, now or by an earlier attempt. Remove them from the outbox. Resending a batch
   after a dropped connection is always safe: ops are identified by `op_id`.
 - **refused**: never applied, with a reason (`op id already used` when this device reused an op id — see `device_seq` below; out of scope, clock too far ahead, does not fit the
-  schema, malformed, belongs to another device). Roll them back locally and tell the app
+  schema, malformed — including a string with a lone UTF-16 surrogate anywhere in the op, which the
+  server cannot store —, belongs to another device). Roll them back locally and tell the app
   ([ADR-0006](adr/0006-refused-ops-roll-back.md)).
 
 An existing record accepts a write if its current scope keys overlap the caller's write keys. A

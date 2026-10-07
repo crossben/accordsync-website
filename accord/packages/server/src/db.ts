@@ -20,11 +20,15 @@ export interface Database {
   };
   /** `state` is null for records written before migration 0004 (rebuilt from the feed). */
   records: { record: string; scopes: string[]; state: RecordSnapshot | null };
-  compacted_ops: { op_id: string; device: string; op_seq: string };
+  compacted_ops: { op_id: string; device: string; op_seq: string; op_hash: string | null };
   devices: {
     device_id: string;
     sub: string;
     read_keys: string[] | null;
+    /** A scope delta not yet received: the read keys before it (migration 0007). */
+    delta_keys: ColumnType<string[] | null, never, string[] | null>;
+    /** The cursor that delta was pulled from; a pull above it shows it was received. */
+    delta_cursor: ColumnType<string | null, never, string | number | null>;
     cursor: ColumnType<string, never, string>;
     needs_resync: Generated<boolean>;
     push_floor: ColumnType<string, never, string>;

@@ -5,6 +5,8 @@ import * as m0002 from './migrations/0002_sync';
 import * as m0003 from './migrations/0003_compaction';
 import * as m0004 from './migrations/0004_record_state';
 import * as m0005 from './migrations/0005_concurrent_pushes';
+import * as m0006 from './migrations/0006_compacted_op_hash';
+import * as m0007 from './migrations/0007_pending_scope_delta';
 
 // Listed explicitly (not read from disk) so the bundled server carries its migrations.
 const migrations: Record<string, Migration> = {
@@ -13,6 +15,8 @@ const migrations: Record<string, Migration> = {
   '0003_compaction': m0003,
   '0004_record_state': m0004,
   '0005_concurrent_pushes': m0005,
+  '0006_compacted_op_hash': m0006,
+  '0007_pending_scope_delta': m0007,
 };
 
 export async function migrateToLatest(db: Db): Promise<void> {

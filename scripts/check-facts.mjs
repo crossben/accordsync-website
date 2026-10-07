@@ -156,9 +156,22 @@ const FACTS = [
     },
   },
   {
-    id: "clients: TypeScript in v1; Dart/Flutter planned after v1",
-    base: "plan",
-    strings: ["TypeScript client", "Dart/Flutter client comes after v1"],
+    id: "implementations: TypeScript, Dart/Flutter and Python clients; TypeScript, PHP and Python servers",
+    base: "app",
+    file: "docs/flutter.md",
+    strings: ["crossben/accordsync-dart"],
+  },
+  {
+    id: "PHP server (Laravel, Symfony)",
+    base: "app",
+    file: "docs/php.md",
+    strings: ["Laravel", "Symfony"],
+  },
+  {
+    id: "Python client and server (FastAPI, Django)",
+    base: "app",
+    file: "docs/python.md",
+    strings: ["FastAPI", "Django"],
   },
   {
     id: "licence: Apache-2.0 (built — app/README.md, section Licence and app/LICENSE, since M0)",
@@ -208,11 +221,11 @@ const FACTS = [
     ],
   },
   {
-    id: "version 0.2.0, released 2026-10-03 (facts.version)",
+    id: "version 0.3.0, released 2026-10-07 (facts.version)",
     base: "app",
     file: "CHANGELOG.md",
-    strings: ["## [0.2.0] - 2026-10-03"],
-    appSource: { file: "README.md", strings: ["Status: v0.2.0"] },
+    strings: ["## [0.3.0] - 2026-10-07"],
+    appSource: { file: "README.md", strings: ["Status: v0.3.0"] },
   },
   // Built on 2026-10-02: each guarantee cites the test that proves it (facts.guarantees).
   {

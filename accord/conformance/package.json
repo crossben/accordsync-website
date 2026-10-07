@@ -1,0 +1,22 @@
+{
+  "name": "@accordsync/conformance",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Black-box HTTP conformance suite for Accord servers",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "reference": "tsx --conditions=@accordsync/source reference-server.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@accordsync/server": "workspace:*",
+    "@hono/node-server": "^2.1.3",
+    "@testcontainers/postgresql": "^12.2.0",
+    "ajv": "^8.20.0",
+    "jose": "^6.2.12",
+    "kysely": "^0.29.6",
+    "tsx": "^4.23.15"
+  }
+}

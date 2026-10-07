@@ -1,9 +1,9 @@
-import { parseOpId } from '@accordsync/core';
+import { encodeOp, parseOpId } from '@accordsync/core';
 import { sql } from 'kysely';
 import type { Db } from './db';
 import type { ServerDefinition } from './define';
 import type { Metrics } from './metrics';
-import { deviceTtlMs, FEED_LOCK, loadRecord } from './sync';
+import { deviceTtlMs, FEED_LOCK, loadRecord, opHash } from './sync';
 
 export interface CompactionResult {
   /** Feed position every live device has applied: only ops at or below it were folded. */
@@ -52,7 +52,8 @@ export async function compact(
     let opsFolded = 0;
     for (const { record, last } of candidates) {
       const replica = await loadRecord(trx as unknown as Db, def, record);
-      const folded = replica.ops().map((o) => o.opId);
+      const ops = replica.ops();
+      const folded = ops.map((o) => o.opId);
       const { scopes } = await trx
         .selectFrom('records')
         .select('scopes')
@@ -61,9 +62,9 @@ export async function compact(
       await trx
         .insertInto('compacted_ops')
         .values(
-          folded.map((op_id) => {
-            const { device, seq } = parseOpId(op_id);
-            return { op_id, device, op_seq: String(seq) };
+          ops.map((op) => {
+            const { device, seq } = parseOpId(op.opId);
+            return { op_id: op.opId, device, op_seq: String(seq), op_hash: opHash(encodeOp(op)) };
           }),
         )
         .onConflict((oc) => oc.doNothing())

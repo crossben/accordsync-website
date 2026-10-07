@@ -6,6 +6,33 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-07
+
+### Added
+
+- `conformance/`: a black-box HTTP conformance suite every Accord server must pass (`pnpm
+conformance`), with the profile and control API other implementations configure.
+- `vectors/op-hash/op-hash.json`: golden vectors pinning `op_hash` (canonical JSON and SHA-256 of
+  compacted ops), regenerated and checked by `@accordsync/server`'s tests.
+- Conformance: a deterministic test of ADR-0010's pull horizon, using new control routes
+  (`/hold-record`, `/held`, `/release`) every implementation must provide.
+
+### Fixed
+
+- `@accordsync/server`: a different op reusing the id of an op folded by compaction (a device that
+  lost its storage and pushed before its first pull) was acknowledged and silently dropped. Folded
+  ops now keep a hash of their content (migration `0006_compacted_op_hash`), and such a push is
+  refused with `op id already used`.
+- `@accordsync/server`: two simultaneous pulls from one device could answer 500 (PostgreSQL
+  serialization conflict); the pull is now retried.
+- `@accordsync/server`: a lost pull answer carrying a scope delta (ADR-0011) was never sent again,
+  so the device missed the history of records entering its scope (or their exits) for good. The
+  delta now stays pending until the device pulls from a later cursor (migration
+  `0007_pending_scope_delta`); a retry at the same cursor receives it again. No client change.
+- `@accordsync/server`: an op containing a lone UTF-16 surrogate (in a value, set element, id or
+  key) made the whole push fail with 500, and the client retried it forever. It is now refused as
+  `malformed op`, and the rest of the batch applies.
+
 ## [0.2.0] - 2026-10-03
 
 ### Added
@@ -96,6 +123,7 @@ First release.
 - M0 skeleton: pnpm monorepo (`core`, `client`, `server`, `simulator`), server health endpoint
   with PostgreSQL migrations, Docker image, Compose file, CI.
 
-[Unreleased]: https://github.com/crossben/accordsync/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/crossben/accordsync/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/crossben/accordsync/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/crossben/accordsync/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/crossben/accordsync/releases/tag/v0.1.0

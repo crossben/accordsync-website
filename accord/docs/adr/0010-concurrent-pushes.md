@@ -48,3 +48,13 @@ entries below it.
   refused (reported to the app) instead of losing them silently. The client generates a fresh
   random device id by default, which avoids this entirely.
 - Third-party clients must push in write order and advance their counter past `device_seq`.
+
+## Update (2026-10-06): compacted ops keep a content hash
+
+The conformance suite found that once an op was folded by compaction, only its id was kept, so a
+_different_ op reusing that id was acknowledged as a retry and silently dropped. `compacted_ops` now
+has `op_hash` (migration `0006_compacted_op_hash`): the SHA-256, lowercase hex, of the UTF-8
+canonical JSON of the op's wire form. A pushed op whose id is in `compacted_ops` is acknowledged
+only when its hash matches, and refused with `op id already used` otherwise. Rows folded before the
+migration have no hash and are acknowledged as before. Every server implementation computes the hash
+the same way, since it is stored in the shared database.

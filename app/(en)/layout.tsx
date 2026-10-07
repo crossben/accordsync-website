@@ -40,7 +40,21 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
     languages: { en: "/", fr: "/fr/", "x-default": "/" },
+    types: { "text/plain": "/llms.txt" },
   },
+  robots: { index: true, follow: true },
+  keywords: [
+    "offline-first sync",
+    "local-first",
+    "sync engine",
+    "CRDT",
+    "conflict resolution",
+    "Flutter offline sync",
+    "React Native offline sync",
+    "Laravel sync server",
+    "Django sync",
+    "PostgreSQL",
+  ],
   openGraph: {
     type: "website",
     siteName: "Accord",

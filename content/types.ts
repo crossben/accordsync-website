@@ -128,6 +128,8 @@ export type Content = {
     heading: string;
     intro: string;
     steps: { title: string; body: string; commands: string[] }[];
+    /** The "Why safe-install" note (facts.safeInstall). */
+    safeInstall: { title: string; body: string; link: string };
     note: string;
     terminalLabel: string;
     terminalNote: string;
@@ -223,6 +225,10 @@ export type Content = {
     /** Header link to the docs. */
     headerLink: string;
     index: { title: string; description: string; intro: string; install: string; note?: string };
+    /** Search-engine titles (keyword-relevant), "index" is the docs index. Prefixed to "— Accord docs". */
+    metaTitles: Record<DocsSlug | "index", string>;
+    /** Previous / next page links at the bottom of a docs page. */
+    pager: { label: string; previous: string; next: string };
     sourceLabel: string;
     fromLabel: string;
     pages: Record<
@@ -242,6 +248,13 @@ export type Content = {
     tagline: string;
     statusLine: string;
     copyright: string;
-    linkLabels: { github: string; docs: string; changelog: string; license: string };
+    linkLabels: {
+      github: string;
+      docs: string;
+      changelog: string;
+      license: string;
+      safeInstall: string;
+      llms: string;
+    };
   };
 };

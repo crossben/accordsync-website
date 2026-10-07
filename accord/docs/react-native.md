@@ -6,9 +6,13 @@ app, with on-device SQLite, background-friendly sync, and the React hooks.
 ## Install
 
 ```sh
-npm install @accordsync/client @accordsync/react @op-engineering/op-sqlite react-native-get-random-values
+safe-install add @accordsync/client @accordsync/react @op-engineering/op-sqlite react-native-get-random-values
 # Expo: npx expo install … and use a development build (op-sqlite is a native module)
 ```
+
+or `npm install …` with the same packages. [safe-install](https://safe-install.benhattab.pro)
+installs with every install script off and asks before running any; op-sqlite is a native module,
+so approve its scripts yourself if the build needs them.
 
 Import the random-values polyfill **first**, at the very top of your entry file. The client uses
 `crypto.getRandomValues` to create the device id; without it, `AccordClient.open` stops with an error
@@ -124,8 +128,11 @@ Copy this into your coding agent (Claude Code, Cursor, Copilot) to add Accord to
 
 ```text
 Integrate Accord (@accordsync/client 0.3.x) into this React Native app.
-Install: npm install @accordsync/client@^0.3.0 @accordsync/react@^0.3.0 @op-engineering/op-sqlite
-react-native-get-random-values (Expo: npx expo install, development build).
+Install: safe-install add @accordsync/client@^0.3.0 @accordsync/react@^0.3.0
+@op-engineering/op-sqlite react-native-get-random-values (Expo: development build).
+Install with safe-install (https://safe-install.benhattab.pro/llms.txt), never npm/pnpm/yarn
+directly. Never approve install scripts yourself (no safe-install approve, --force, --yes or
+allowScripts edits): if a script is skipped, stop and tell me the package and its scripts.
 Create:
 1. Import the react-native-get-random-values polyfill on the very first line of the entry file.
 2. src/schema.ts with the same defineSchema(...) as the Accord server.

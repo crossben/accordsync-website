@@ -4,19 +4,23 @@ An [Accord](https://github.com/crossben/accordsync) project: offline-first sync 
 rules.
 
 ```sh
-npm install
+safe-install install
 docker compose up -d            # PostgreSQL on port 55432
 cp .env.example .env
-npm run server                  # Accord on http://localhost:8080
-npm run client                  # a device writes offline, then syncs
+safe-install run server         # Accord on http://localhost:8080
+safe-install run client         # a device writes offline, then syncs
 ```
+
+[safe-install](https://safe-install.benhattab.pro) installs packages with every install script off
+and asks before running any. With npm instead: `npm install`, then `npm run server` and
+`npm run client`.
 
 | File               | What                                                  |
 | ------------------ | ----------------------------------------------------- |
 | `schema.ts`        | Records and merge rules, shared by server and clients |
 | `accord.config.ts` | Server: scopes (who reads and writes what) and auth   |
 | `client.ts`        | A device writing offline and syncing                  |
-| `dev-token.mjs`    | Development tokens (`npm run token -- <user>`)        |
+| `dev-token.mjs`    | Development tokens (`safe-install run token -- <user>`) |
 
 Docs: [client](https://github.com/crossben/accordsync/blob/main/docs/client.md) ·
 [scope patterns](https://github.com/crossben/accordsync/blob/main/docs/scopes.md) ·

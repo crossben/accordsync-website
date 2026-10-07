@@ -78,7 +78,13 @@ accord.start();
 await accord.inc('dossier:91', 'visits', 1); // works offline
 ```
 
-Start a project in one command: `npm create accord my-app`.
+Start a project in one command: `npm create accord my-app`. Inside it, install and run with
+`safe-install install`, `safe-install run server` and `safe-install run client`.
+
+**Why safe-install.** Installing a package can run its install scripts, which is code from the
+network running on your machine. [safe-install](https://safe-install.benhattab.pro) is a drop-in
+for npm, pnpm, yarn and bun that installs with every install script off and runs none until you
+approve it. To add a package: `safe-install add @accordsync/client` (or `npm install …`).
 
 | Guide                                         |                                                                   |
 | --------------------------------------------- | ----------------------------------------------------------------- |

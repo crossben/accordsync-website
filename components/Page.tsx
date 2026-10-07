@@ -10,6 +10,7 @@ import {
   quickstartOutput,
   proofs,
   repo,
+  safeInstall,
   screenshot,
   strategies,
 } from "@/content/facts";
@@ -28,40 +29,14 @@ import CodeTabs, { type CodeTab } from "@/components/CodeTabs";
 import CodeBlock from "@/components/CodeBlock";
 import PlaygroundMount from "@/components/playground/PlaygroundMount";
 import Terminal from "@/components/Terminal";
+import { homeJsonLd, jsonLdHtml } from "@/lib/seo";
 
 function JsonLd({ content }: { content: Content }) {
-  const data = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebSite",
-        name: "Accord",
-        url:
-          content.lang === "fr"
-            ? "https://accord.benhattab.pro/fr/"
-            : "https://accord.benhattab.pro/",
-        inLanguage: content.lang === "fr" ? "fr-FR" : "en",
-        description: content.meta.description,
-        publisher: { "@type": "Person", name: "Ben Hattab" },
-      },
-      {
-        "@type": "SoftwareSourceCode",
-        name: "Accord",
-        description: content.meta.description,
-        url: "https://accord.benhattab.pro/",
-        codeRepository: repo.home,
-        license: "https://www.apache.org/licenses/LICENSE-2.0",
-        programmingLanguage: ["TypeScript"],
-        runtimePlatform: "Node.js",
-        isAccessibleForFree: true,
-        author: { "@type": "Person", name: "Ben Hattab" },
-        keywords:
-          "offline-first, sync engine, local-first, conflict resolution, TypeScript, PostgreSQL, self-hosted, CRDT",
-      },
-    ],
-  };
   return (
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: jsonLdHtml(homeJsonLd(content)) }}
+    />
   );
 }
 
@@ -371,6 +346,17 @@ export default async function Page({ content }: { content: Content }) {
                     </div>
                   </div>
                 ))}
+                <div className="rounded-lg border border-line p-4">
+                  <h3 className="font-semibold">{content.quickstart.safeInstall.title}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">
+                    {content.quickstart.safeInstall.body}
+                  </p>
+                  <p className="mt-2 text-sm">
+                    <a href={safeInstall.home} className={linkClass}>
+                      {content.quickstart.safeInstall.link}
+                    </a>
+                  </p>
+                </div>
                 <p className="text-sm leading-relaxed text-muted">{content.quickstart.note}</p>
                 <p className="text-sm">
                   <a href={docsHref(content.lang, "quickstart")} className={linkClass}>

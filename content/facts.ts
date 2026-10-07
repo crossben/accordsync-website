@@ -156,4 +156,77 @@ export const playground = {
  * The quick start's last line of output: what the client of a project made with `npm create accord`
  * prints after it syncs. Source: app/packages/create-accord/template/client.ts (check-facts).
  */
+/**
+ * safe-install: the owner's installer, used in every install command on the site. It installs with
+ * every lifecycle script off and asks before running any. Source: app/README.md ("Why
+ * safe-install") and the generated project's README (check-facts).
+ */
+export const safeInstall = {
+  home: "https://safe-install.benhattab.pro",
+  llms: "https://safe-install.benhattab.pro/llms.txt",
+} as const;
+
+/**
+ * Published packages per registry, and the per-language repositories. Source: the package tables in
+ * app/README.md, docs/flutter.md, docs/php.md and docs/python.md (check-facts requires each name).
+ */
+export const registries = [
+  {
+    label: "npm (TypeScript)",
+    source: "packages/*/package.json",
+    packages: [
+      "@accordsync/client",
+      "@accordsync/server",
+      "@accordsync/react",
+      "@accordsync/core",
+      "@accordsync/simulator",
+      "create-accord",
+    ],
+    url: (name: string) => `https://www.npmjs.com/package/${name}`,
+  },
+  {
+    label: "pub.dev (Dart/Flutter)",
+    source: "docs/flutter.md",
+    packages: ["accordsync_flutter", "accordsync", "accordsync_core"],
+    url: (name: string) => `https://pub.dev/packages/${name}`,
+  },
+  {
+    label: "Packagist (PHP)",
+    source: "docs/php.md",
+    packages: ["accordsync/laravel", "accordsync/symfony", "accordsync/server", "accordsync/core"],
+    url: (name: string) => `https://packagist.org/packages/${name}`,
+  },
+  {
+    label: "PyPI (Python)",
+    source: "docs/python.md",
+    packages: [
+      "accordsync",
+      "accordsync-fastapi",
+      "accordsync-django",
+      "accordsync-server",
+      "accordsync-core",
+    ],
+    url: (name: string) => `https://pypi.org/project/${name}/`,
+  },
+] as const;
+
+/** The other implementations' repositories, as linked from the Accord docs. */
+export const languageRepos = [
+  {
+    name: "accordsync-dart",
+    url: "https://github.com/crossben/accordsync-dart",
+    source: "docs/flutter.md",
+  },
+  {
+    name: "accordsync-php",
+    url: "https://github.com/crossben/accordsync-php",
+    source: "docs/php.md",
+  },
+  {
+    name: "accordsync-python",
+    url: "https://github.com/crossben/accordsync-python",
+    source: "docs/python.md",
+  },
+] as const;
+
 export const quickstartOutput = "after sync: 0 pending; the server has it.";

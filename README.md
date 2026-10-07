@@ -19,6 +19,25 @@ This creates a working project: a schema, a server configuration, PostgreSQL in 
 a client that writes offline, then syncs. See the
 [quick start](https://accord.benhattab.pro/docs/quickstart/).
 
+Inside the project, install and run with [safe-install](https://safe-install.benhattab.pro):
+
+```sh
+cd my-app
+safe-install install
+docker compose up -d
+cp .env.example .env
+safe-install run server
+safe-install run client        # in another terminal
+```
+
+**Why safe-install.** Installing a package can run its install scripts. safe-install installs with
+every lifecycle script off and asks before running any. With npm instead: `npm install`,
+`npm run server`, `npm run client`. To add Accord to an existing app:
+`safe-install add @accordsync/client` (or `npm install @accordsync/client`).
+
+For language models: [llms.txt](https://accord.benhattab.pro/llms.txt) and
+[llms-full.txt](https://accord.benhattab.pro/llms-full.txt).
+
 ## Packages
 
 | Package                                                                         | What it does                                                                                  | Docs                                                                |

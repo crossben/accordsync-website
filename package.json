@@ -10,12 +10,14 @@
     "sync:app": "node scripts/sync-app.mjs",
     "prebuild": "npm run --silent brand && node scripts/sync-app.mjs && node scripts/check-facts.mjs",
     "build": "next build",
+    "postbuild": "node scripts/check-seo.mjs",
     "start": "npx serve@latest out",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "check:links": "node scripts/check-links.mjs",
-    "check:snippets": "node scripts/check-snippets.mjs"
+    "check:snippets": "node scripts/check-snippets.mjs",
+    "check:seo": "node scripts/check-seo.mjs"
   },
   "dependencies": {
     "@accordsync/core": "0.3.0",

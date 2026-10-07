@@ -53,12 +53,14 @@ console.log(`
 Created ${name} in ${target}
 
   cd ${arg}
-  npm install
+  safe-install install          # or: npm install
   docker compose up -d          # PostgreSQL
   cp .env.example .env
-  npm run server                # Accord on http://localhost:8080
-  npm run token -- awa          # a development token for user "awa"
-  npm run client                # writes offline, then syncs
+  safe-install run server       # Accord on http://localhost:8080
+  safe-install run token -- awa # a development token for user "awa"
+  safe-install run client       # writes offline, then syncs
+
+safe-install (https://safe-install.benhattab.pro) installs with every install script off.
 
 Next: edit schema.ts and accord.config.ts. Docs: https://github.com/crossben/accordsync
 `);

@@ -10,7 +10,7 @@ export const en: Content = {
   meta: {
     title: "Accord — offline-first sync that stays correct when the network lies",
     description:
-      "Accord is an open-source, self-hosted offline-first sync engine: local-first writes, operations instead of overwrites, declared merge rules, and conflicts your app decides. TypeScript and PostgreSQL.",
+      "Accord is an open-source, self-hosted offline-first sync engine: local-first writes, operations instead of overwrites, declared merge rules, and conflicts your app decides. Clients and servers in TypeScript, Dart, PHP and Python, on PostgreSQL.",
   },
 
   header: {
@@ -230,19 +230,24 @@ export const en: Content = {
       {
         title: "Create a project",
         body: "Node 22.18 or later and Docker.",
-        commands: ["npm create accord my-app", "cd my-app", "npm install"],
+        commands: ["npm create accord my-app", "cd my-app", "safe-install install"],
       },
       {
         title: "Start PostgreSQL and the server",
-        body: "The project's Compose file runs PostgreSQL; the server runs from npm.",
-        commands: ["docker compose up -d", "cp .env.example .env", "npm run server"],
+        body: "The project's Compose file runs PostgreSQL; the server runs from the installed packages.",
+        commands: ["docker compose up -d", "cp .env.example .env", "safe-install run server"],
       },
       {
         title: "Run a device",
         body: "In another terminal: the example client writes four changes offline, then syncs.",
-        commands: ["npm run client"],
+        commands: ["safe-install run client"],
       },
     ],
+    safeInstall: {
+      title: "Why safe-install",
+      body: "Installing a package can run its install scripts: code from the network, on your machine. safe-install is a drop-in for npm, pnpm, yarn and bun that installs with every install script off and runs none until you approve it. With npm instead: npm install, npm run server, npm run client.",
+      link: "About safe-install",
+    },
     note: "To work on Accord itself (pnpm, the test suites), see the repository README.",
     terminalLabel: "Terminal",
     terminalNote: "Real commands; the last line is what the example client prints after it syncs.",
@@ -392,6 +397,22 @@ export const en: Content = {
         "Everything to build an offline-first app on Accord: the client writes locally and syncs, the self-hosted server merges by your rules. Every code example on these pages is read from the repository at build time, so it matches the published packages.",
       install: "Start a project in one command:",
     },
+    metaTitles: {
+      index: "Offline-first sync for web, mobile and servers",
+      quickstart: "Quick start: an offline-first sync project in one command",
+      schema: "Merge rules and conflict resolution: lww, counter, set, conflict()",
+      client: "TypeScript client: local-first writes and offline sync",
+      react: "React hooks for offline-first sync",
+      "react-native": "React Native offline sync with SQLite",
+      flutter: "Flutter offline sync with drift (Dart)",
+      php: "Laravel and Symfony sync server (PHP)",
+      python: "Python offline sync, FastAPI and Django sync server",
+      server: "Self-hosted sync server on PostgreSQL",
+      scopes: "Sync scopes: who reads and writes which records",
+      protocol: "Sync protocol: push, pull and resync over HTTPS",
+      security: "Sync server security checklist",
+    },
+    pager: { label: "More docs", previous: "Previous", next: "Next" },
     sourceLabel: "Source",
     fromLabel: "from",
     pages: {
@@ -410,6 +431,7 @@ export const en: Content = {
             title: "Run it",
             body: [
               "Start PostgreSQL and the server, then run the example device: it writes four changes with no network, syncs, and reports zero pending changes.",
+              "The commands use safe-install (safe-install.benhattab.pro): installing a package can run its install scripts, and safe-install installs with every install script off and runs none until you approve it. With npm instead: `npm install`, `npm run server`, `npm run client`.",
             ],
           },
           files: {
@@ -819,6 +841,13 @@ export const en: Content = {
     tagline: "Built for networks that lie.",
     statusLine: "v{version}, released {date}. Pre-1.0.",
     copyright: "© 2026 Ben Hattab",
-    linkLabels: { github: "GitHub", docs: "Docs", changelog: "Changelog", license: "Licence" },
+    linkLabels: {
+      github: "GitHub",
+      docs: "Docs",
+      changelog: "Changelog",
+      license: "Licence",
+      safeInstall: "safe-install",
+      llms: "llms.txt",
+    },
   },
 };

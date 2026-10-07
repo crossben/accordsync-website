@@ -12,7 +12,7 @@ const OUT = resolve("out");
 // accord.benhattab.pro is the provisional canonical domain (website.md section 11 —
 // the owner has not picked the final one yet). Update with the domain.
 const SITE = "https://accord.benhattab.pro";
-const ALLOWED_EXTERNAL_HOSTS = ["github.com", "accord.benhattab.pro"];
+const ALLOWED_EXTERNAL_HOSTS = ["github.com", "accord.benhattab.pro", "safe-install.benhattab.pro"];
 const GITHUB_REPOS = ["crossben/accordsync", "crossben/accordsync-website"];
 
 function* walk(dir) {

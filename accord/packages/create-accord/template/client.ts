@@ -1,4 +1,4 @@
-// A device: writes offline first, then syncs. Run: npm run client (with the server running).
+// A device: writes offline first, then syncs. Run: safe-install run client (with the server running).
 import { AccordClient, httpTransport, MemoryStorage } from '@accordsync/client';
 import { schema } from './schema.ts';
 import { devToken } from './dev-token.mjs';

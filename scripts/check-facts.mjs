@@ -204,13 +204,30 @@ const FACTS = [
     base: "app",
     file: "packages/create-accord/template/README.md",
     strings: [
-      "npm install",
+      "safe-install install",
       "docker compose up -d",
       "cp .env.example .env",
-      "npm run server",
-      "npm run client",
+      "safe-install run server",
+      "safe-install run client",
+      "safe-install run token -- <user>",
+      "With npm instead: `npm install`, then `npm run server` and `npm run client`.",
     ],
     appSource: { file: "packages/create-accord/README.md", strings: ["npm create accord my-app"] },
+  },
+  {
+    id: "safe-install: installs with every install script off, runs none until approved (facts.safeInstall)",
+    base: "app",
+    file: "README.md",
+    strings: [
+      "**Why safe-install.**",
+      "Installing a package can run its install scripts",
+      "installs with every install script off and runs none until you approve it",
+      "https://safe-install.benhattab.pro",
+    ],
+    appSource: {
+      file: "packages/create-accord/template/README.md",
+      strings: ["installs packages with every install script off and asks before running any"],
+    },
   },
   {
     id: "quick start output: what the example client prints after syncing (facts.quickstartOutput)",
@@ -314,6 +331,48 @@ const FACTS = [
       file: "packages/create-accord/package.json",
       strings: ['"name": "create-accord"'],
     },
+  },
+  ...["core", "client", "server", "react", "simulator", "create-accord"].map((pkg) => ({
+    id: `registries: npm package packages/${pkg} (facts.registries)`,
+    base: "app",
+    file: `packages/${pkg}/package.json`,
+    strings: [`"name": "${pkg === "create-accord" ? pkg : `@accordsync/${pkg}`}"`],
+  })),
+  {
+    id: "registries: Dart packages and repository (facts.registries, facts.languageRepos)",
+    base: "app",
+    file: "docs/flutter.md",
+    strings: [
+      "`accordsync_flutter`",
+      "`accordsync`",
+      "`accordsync_core`",
+      "github.com/crossben/accordsync-dart",
+    ],
+  },
+  {
+    id: "registries: PHP packages and repository (facts.registries, facts.languageRepos)",
+    base: "app",
+    file: "docs/php.md",
+    strings: [
+      "`accordsync/laravel`",
+      "`accordsync/symfony`",
+      "`accordsync/server`",
+      "`accordsync/core`",
+      "github.com/crossben/accordsync-php",
+    ],
+  },
+  {
+    id: "registries: Python packages and repository (facts.registries, facts.languageRepos)",
+    base: "app",
+    file: "docs/python.md",
+    strings: [
+      "`accordsync`",
+      "`accordsync-fastapi`",
+      "`accordsync-django`",
+      "`accordsync-server`",
+      "`accordsync-core`",
+      "github.com/crossben/accordsync-python",
+    ],
   },
   // The docs pages (docs.md): every cited file, and every snippet marker, must still be there.
   ...DOC_SOURCES.map((file) => ({

@@ -1,5 +1,5 @@
 import type { Content } from "@/content/types";
-import { repo } from "@/content/facts";
+import { repo, safeInstall } from "@/content/facts";
 import { statusLine } from "@/lib/status";
 import { features } from "@/content/features";
 import Mark from "@/components/Mark";
@@ -18,6 +18,9 @@ export default function Footer({ content }: { content: Content }) {
   if (features.repoLinks.license) {
     links.push({ label: content.footer.linkLabels.license, href: repo.license });
   }
+
+  links.push({ label: content.footer.linkLabels.safeInstall, href: safeInstall.home });
+  links.push({ label: content.footer.linkLabels.llms, href: "/llms.txt" });
 
   return (
     <footer className="border-t border-line">

@@ -11,7 +11,7 @@ export const fr: Content = {
   meta: {
     title: "Accord — la synchronisation offline-first qui reste correcte quand le réseau ment",
     description:
-      "Accord est un moteur de synchronisation offline-first open source et auto-hébergé : écriture locale d'abord, opérations plutôt qu'écrasements, règles de fusion déclarées, et des conflits que votre appli tranche. TypeScript et PostgreSQL.",
+      "Accord est un moteur de synchronisation offline-first open source et auto-hébergé : écriture locale d'abord, opérations plutôt qu'écrasements, règles de fusion déclarées, et des conflits que votre appli tranche. Clients et serveurs en TypeScript, Dart, PHP et Python, sur PostgreSQL.",
   },
 
   header: {
@@ -234,19 +234,24 @@ export const fr: Content = {
       {
         title: "Créer un projet",
         body: "Node 22.18 ou plus récent, et Docker.",
-        commands: ["npm create accord my-app", "cd my-app", "npm install"],
+        commands: ["npm create accord my-app", "cd my-app", "safe-install install"],
       },
       {
         title: "Démarrer PostgreSQL et le serveur",
-        body: "Le fichier Compose du projet lance PostgreSQL ; le serveur tourne depuis npm.",
-        commands: ["docker compose up -d", "cp .env.example .env", "npm run server"],
+        body: "Le fichier Compose du projet lance PostgreSQL ; le serveur tourne depuis les paquets installés.",
+        commands: ["docker compose up -d", "cp .env.example .env", "safe-install run server"],
       },
       {
         title: "Lancer un appareil",
         body: "Dans un autre terminal : le client d'exemple écrit quatre changements hors ligne, puis synchronise.",
-        commands: ["npm run client"],
+        commands: ["safe-install run client"],
       },
     ],
+    safeInstall: {
+      title: "Pourquoi safe-install",
+      body: "Installer un paquet peut lancer ses scripts d'installation : du code venu du réseau, sur votre machine. safe-install remplace npm, pnpm, yarn et bun : il installe avec tous les scripts d'installation désactivés et n'en lance aucun tant que vous ne l'avez pas approuvé. Avec npm : npm install, npm run server, npm run client.",
+      link: "À propos de safe-install",
+    },
     note: "Pour travailler sur Accord lui-même (pnpm, les suites de tests), voir le README du dépôt.",
     terminalLabel: "Terminal",
     terminalNote:
@@ -399,6 +404,22 @@ export const fr: Content = {
       install: "Créez un projet en une commande :",
       note: "Les exemples de code et leurs commentaires viennent du dépôt, en anglais.",
     },
+    metaTitles: {
+      index: "Synchronisation offline-first pour le web, le mobile et les serveurs",
+      quickstart: "Démarrage rapide : un projet de synchronisation offline-first en une commande",
+      schema: "Règles de fusion et résolution de conflits : lww, counter, set, conflict()",
+      client: "Client TypeScript : écriture locale d'abord et synchronisation hors ligne",
+      react: "Hooks React pour la synchronisation offline-first",
+      "react-native": "Synchronisation hors ligne React Native avec SQLite",
+      flutter: "Synchronisation hors ligne Flutter avec drift (Dart)",
+      php: "Serveur de synchronisation Laravel et Symfony (PHP)",
+      python: "Synchronisation hors ligne en Python, serveur FastAPI et Django",
+      server: "Serveur de synchronisation auto-hébergé sur PostgreSQL",
+      scopes: "Scopes de synchronisation : qui lit et écrit quels enregistrements",
+      protocol: "Protocole de synchronisation : push, pull et resync en HTTPS",
+      security: "Liste de contrôle de sécurité du serveur de synchronisation",
+    },
+    pager: { label: "Autres pages", previous: "Précédent", next: "Suivant" },
     sourceLabel: "Source",
     fromLabel: "depuis",
     pages: {
@@ -417,6 +438,7 @@ export const fr: Content = {
             title: "Le lancer",
             body: [
               "Démarrez PostgreSQL et le serveur, puis l'appareil d'exemple : il écrit quatre changements sans réseau, synchronise, et n'a plus aucun changement en attente.",
+              "Les commandes utilisent safe-install (safe-install.benhattab.pro) : installer un paquet peut lancer ses scripts d'installation, et safe-install installe avec tous les scripts d'installation désactivés et n'en lance aucun tant que vous ne l'avez pas approuvé. Avec npm : `npm install`, `npm run server`, `npm run client`.",
             ],
           },
           files: {
@@ -831,6 +853,13 @@ export const fr: Content = {
     tagline: "Conçu pour les réseaux qui mentent.",
     statusLine: "v{version}, publiée le {date}. Avant la 1.0.",
     copyright: "© 2026 Ben Hattab",
-    linkLabels: { github: "GitHub", docs: "Docs", changelog: "Changelog", license: "Licence" },
+    linkLabels: {
+      github: "GitHub",
+      docs: "Docs",
+      changelog: "Changelog",
+      license: "Licence",
+      safeInstall: "safe-install",
+      llms: "llms.txt",
+    },
   },
 };

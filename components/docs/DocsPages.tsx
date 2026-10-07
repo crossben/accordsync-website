@@ -11,6 +11,7 @@ import Footer from "@/components/Footer";
 import CodeBlock from "@/components/CodeBlock";
 import ExternalArrow from "@/components/ExternalArrow";
 import MergeTable from "@/components/MergeTable";
+import { docsJsonLd, jsonLdHtml } from "@/lib/seo";
 
 const linkClass =
   "font-medium text-ink underline decoration-accent decoration-2 underline-offset-4 hover:text-accent";
@@ -67,12 +68,14 @@ function DocsShell({
   content,
   slug,
   title,
+  description,
   intro,
   children,
 }: {
   content: Content;
   slug: string;
   title: string;
+  description: string;
   intro: ReactNode;
   children: ReactNode;
 }) {
@@ -97,6 +100,12 @@ function DocsShell({
         </main>
       </div>
       <Footer content={content} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdHtml(docsJsonLd(content, slug, title, description)),
+        }}
+      />
     </>
   );
 }
@@ -124,6 +133,7 @@ export function DocsIndex({ content }: { content: Content }) {
       content={content}
       slug=""
       title={docs.index.title}
+      description={docs.index.description}
       intro={
         <>
           <p>{docs.index.intro}</p>
@@ -158,11 +168,44 @@ export function DocsIndex({ content }: { content: Content }) {
   );
 }
 
+/** Previous and next pages in sidebar order. */
+function Pager({ content, slug }: { content: Content; slug: DocsSlug }) {
+  const i = docsPages.findIndex((p) => p.slug === slug);
+  const links = [
+    { rel: "prev", label: content.docs.pager.previous, page: docsPages[i - 1] },
+    { rel: "next", label: content.docs.pager.next, page: docsPages[i + 1] },
+  ].filter((l) => l.page);
+  return (
+    <nav aria-label={content.docs.pager.label} className="border-t border-line pt-6">
+      <ul className="grid gap-4 sm:grid-cols-2">
+        {links.map(({ rel, label, page }) => (
+          <li key={rel} className={rel === "next" ? "sm:col-start-2 sm:text-right" : undefined}>
+            <a
+              href={docsHref(content.lang, page!.slug)}
+              rel={rel}
+              className="block rounded-xl border border-line p-4 transition-colors hover:border-accent"
+            >
+              <span className="block text-xs text-muted">{label}</span>
+              <span className="font-semibold">{content.docs.pages[page!.slug].title}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 export function DocsPageView({ content, slug }: { content: Content; slug: DocsSlug }) {
   const page = docsPages.find((p) => p.slug === slug)!;
   const copy = content.docs.pages[slug];
   return (
-    <DocsShell content={content} slug={slug} title={copy.title} intro={<Text>{copy.intro}</Text>}>
+    <DocsShell
+      content={content}
+      slug={slug}
+      title={copy.title}
+      description={copy.description}
+      intro={<Text>{copy.intro}</Text>}
+    >
       {page.sections.map((section) => {
         const s = copy.sections[section.key];
         if (!s) throw new Error(`[docs] ${content.lang}: no copy for ${slug}#${section.key}`);
@@ -204,6 +247,7 @@ export function DocsPageView({ content, slug }: { content: Content; slug: DocsSl
           {page.source} <ExternalArrow />
         </a>
       </p>
+      <Pager content={content} slug={slug} />
     </DocsShell>
   );
 }

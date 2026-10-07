@@ -13,7 +13,10 @@ export const DOC_SNIPPETS = {
     file: "packages/create-accord/README.md",
     marker: "npm create accord my-app",
   },
-  "quickstart.run": { file: "packages/create-accord/template/README.md", marker: "npm run client" },
+  "quickstart.run": {
+    file: "packages/create-accord/template/README.md",
+    marker: "safe-install run client",
+  },
 
   // Schema and merge rules
   "schema.define": { file: "docs/merge-rules.md", marker: "const schema = defineSchema({" },
@@ -37,7 +40,7 @@ export const DOC_SNIPPETS = {
   // React Native
   "rn.install": {
     file: "docs/react-native.md",
-    marker: "npm install @accordsync/client @accordsync/react",
+    marker: "safe-install add @accordsync/client @accordsync/react",
   },
   "rn.polyfill": {
     file: "docs/react-native.md",

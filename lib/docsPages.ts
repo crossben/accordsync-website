@@ -151,14 +151,13 @@ export function sourceHref(file: string): string {
 }
 
 /** Per-page metadata with canonical and hreflang alternates for both languages. */
-export function docsMetadata(
-  content: Content,
-  slug: string,
-  title: string,
-  description: string,
-): Metadata {
+export function docsMetadata(content: Content, slug: DocsSlug | "", description: string): Metadata {
   const url = docsHref(content.lang, slug);
-  const fullTitle = `${title} — Accord docs`;
+  const fullTitle = `${content.docs.metaTitles[slug || "index"]} — Accord docs`;
+  const ogAlt =
+    content.lang === "en"
+      ? "Accord — offline-first sync that stays correct when the network lies."
+      : "Accord — la synchronisation offline-first qui reste correcte quand le réseau ment.";
   return {
     title: fullTitle,
     description,
@@ -169,16 +168,23 @@ export function docsMetadata(
         fr: docsHref("fr", slug),
         "x-default": docsHref("en", slug),
       },
+      types: { "text/plain": "/llms.txt" },
     },
     openGraph: {
-      type: "website",
+      type: "article",
       siteName: "Accord",
       title: fullTitle,
       description,
       url,
       locale: content.lang === "en" ? "en" : "fr_FR",
-      images: [{ url: "/brand/social-preview.png", width: 1200, height: 630 }],
+      alternateLocale: content.lang === "en" ? ["fr_FR"] : ["en"],
+      images: [{ url: "/brand/social-preview.png", width: 1200, height: 630, alt: ogAlt }],
     },
-    twitter: { card: "summary_large_image", title: fullTitle, description },
+    twitter: {
+      card: "summary_large_image",
+      title: fullTitle,
+      description,
+      images: ["/brand/social-preview.png"],
+    },
   };
 }

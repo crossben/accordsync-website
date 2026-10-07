@@ -4,8 +4,11 @@ React hooks for [Accord](https://github.com/crossben/accordsync): records, confl
 that re-render when local state changes, whether from a local write or from sync.
 
 ```sh
-npm install @accordsync/react @accordsync/client
+safe-install add @accordsync/react @accordsync/client
 ```
+
+or `npm install @accordsync/react @accordsync/client`. [safe-install](https://safe-install.benhattab.pro) installs with every
+install script off and asks before running any.
 
 ```tsx
 import { AccordProvider, useConflicts, useRecord, useSyncStatus } from '@accordsync/react';
@@ -38,7 +41,10 @@ Copy this into your coding agent (Claude Code, Cursor, Copilot) to add Accord to
 
 ```text
 Integrate Accord (@accordsync/react 0.3.x) into this React app.
-Install: npm install @accordsync/react@^0.3.0 @accordsync/client@^0.3.0
+Install: safe-install add @accordsync/react@^0.3.0 @accordsync/client@^0.3.0
+Install with safe-install (https://safe-install.benhattab.pro/llms.txt), never npm/pnpm/yarn
+directly. Never approve install scripts yourself (no safe-install approve, --force, --yes or
+allowScripts edits): if a script is skipped, stop and tell me the package and its scripts.
 Create:
 1. src/schema.ts exporting the same defineSchema(...) as the Accord server (share the file or
    keep it identical). Import defineSchema, lww, counter, set, conflict from '@accordsync/client'.

@@ -6,7 +6,10 @@ Part of **[Accord](https://github.com/crossben/accordsync)**, offline-first sync
 the network lies. Useful to test your own scope rules and schemas under faults; see `convergence.test.ts` in the repository.
 
 ```sh
-npm install @accordsync/simulator
+safe-install add @accordsync/simulator
 ```
+
+or `npm install @accordsync/simulator`. [safe-install](https://safe-install.benhattab.pro) installs with every
+install script off and asks before running any.
 
 Licence: Apache-2.0.

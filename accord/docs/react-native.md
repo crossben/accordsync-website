@@ -117,3 +117,38 @@ function DossierScreen({ id }: { id: string }) {
 - [ ] Conflicts are shown where the user can decide (`useConflicts`).
 - [ ] The device database is protected like the rest of your app's data. Accord does not encrypt
       it; use SQLCipher with op-sqlite if the data is sensitive.
+
+## Prompt for an AI coding agent
+
+Copy this into your coding agent (Claude Code, Cursor, Copilot) to add Accord to an existing app.
+
+```text
+Integrate Accord (@accordsync/client 0.3.x) into this React Native app.
+Install: npm install @accordsync/client@^0.3.0 @accordsync/react@^0.3.0 @op-engineering/op-sqlite
+react-native-get-random-values (Expo: npx expo install, development build).
+Create:
+1. Import the react-native-get-random-values polyfill on the very first line of the entry file.
+2. src/schema.ts with the same defineSchema(...) as the Accord server.
+3. openAccord(getToken): AccordClient.open with new SqliteStorage({ run, all }) over op-sqlite
+   and httpTransport({ url: <sync URL>, getToken }), exactly as in the docs page.
+4. useAccordLifecycle(accord): accord.start() in the foreground, accord.stop() in the background,
+   accord.sync() when NetInfo reports a connection.
+5. <AccordProvider client={accord}> around the app; read with useRecord, write with useAccord().
+Pick a merge rule for every field, deliberately:
+- lww(): the latest write wins. Names, notes, simple scalars.
+- counter(): every increment is summed, none is lost. Quantities, stock adjustments.
+- set(): add-wins set of elements. Tags, assigned people, attached documents.
+- conflict(): concurrent values are all kept and flagged; a person decides. Use it for
+  status, approvals, amounts and anything with money or legal weight. Never lww() there.
+UI:
+- accord.on("refused", (r) => ...): the write was already rolled back; tell the user (r.reason).
+- useConflicts(): show the values where someone can choose, then accord.resolve(...).
+- useSyncStatus() for pending writes and lastError.
+Do not:
+- set deviceId: the client generates and stores one; a fixed id can get writes refused.
+- check the network before writing: writes are local and sync catches up.
+- edit or replay ops, or write to the accord_ tables yourself.
+Verify: run two devices or simulators, put one in airplane mode, write on both, reconnect, and
+check both show the same data and the conflict.
+Docs: https://accord.benhattab.pro/docs/react-native/ https://accord.benhattab.pro/docs/react/
+```

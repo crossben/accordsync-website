@@ -22,9 +22,17 @@ export const DOC_SNIPPETS = {
   "client.open": { file: "docs/client.md", marker: "const accord = await AccordClient.open({" },
   "client.conflicts": { file: "docs/client.md", marker: "for (const c of accord.conflicts())" },
   "client.events": { file: "docs/client.md", marker: "accord.on('refused'" },
+  "client.agent": {
+    file: "docs/client.md",
+    marker: "Integrate Accord (@accordsync/client 0.3.x) into this web app.",
+  },
 
   // React
   "react.hooks": { file: "packages/react/README.md", marker: "<AccordProvider client={accord}>" },
+  "react.agent": {
+    file: "packages/react/README.md",
+    marker: "Integrate Accord (@accordsync/react 0.3.x) into this React app.",
+  },
 
   // React Native
   "rn.install": {
@@ -37,6 +45,10 @@ export const DOC_SNIPPETS = {
   },
   "rn.open": { file: "docs/react-native.md", marker: "export async function openAccord(" },
   "rn.lifecycle": { file: "docs/react-native.md", marker: "export function useAccordLifecycle(" },
+  "rn.agent": {
+    file: "docs/react-native.md",
+    marker: "Integrate Accord (@accordsync/client 0.3.x) into this React Native app.",
+  },
 
   // Flutter
   "flutter.install": {
@@ -46,6 +58,10 @@ export const DOC_SNIPPETS = {
   "flutter.open": { file: "docs/flutter.md", marker: "Future<AccordClient> openAccord(" },
   "flutter.lifecycle": { file: "docs/flutter.md", marker: "child: AccordLifecycle(" },
   "flutter.widgets": { file: "docs/flutter.md", marker: "record: 'dossier:91'," },
+  "flutter.agent": {
+    file: "docs/flutter.md",
+    marker: "Integrate Accord (accordsync_flutter 0.3.x) into this Flutter app.",
+  },
 
   // PHP
   "php.install": { file: "docs/php.md", marker: "php artisan vendor:publish --tag=accord-config" },
@@ -56,6 +72,10 @@ export const DOC_SNIPPETS = {
   "python.install": { file: "docs/python.md", marker: "pip install accordsync-fastapi uvicorn" },
   "python.open": { file: "docs/python.md", marker: "accord = AccordClient.open(" },
   "python.conflicts": { file: "docs/python.md", marker: "for c in accord.conflicts():" },
+  "python.agent": {
+    file: "docs/python.md",
+    marker: "Integrate the Accord client (accordsync 0.3.x) into this Python program.",
+  },
   "python.fastapi": { file: "docs/python.md", marker: "app.include_router(accord_router(" },
   "python.django": { file: "docs/python.md", marker: '"accordsync_django"]' },
   "python.migrate": { file: "docs/python.md", marker: "python manage.py accord_migrate" },

@@ -87,3 +87,39 @@ you pass a fixed id and the app's storage is wiped, writes made before the next 
 
 The device id, cursor, clock and op counter are stored, so a restarted app continues where it
 stopped and never reuses an op id.
+
+## Prompt for an AI coding agent
+
+Copy this into your coding agent (Claude Code, Cursor, Copilot) to add Accord to an existing app.
+
+```text
+Integrate Accord (@accordsync/client 0.3.x) into this web app.
+Install: npm install @accordsync/client@^0.3.0
+Create:
+1. src/schema.ts exporting the same defineSchema(...) as the Accord server (share the file or
+   keep it identical). Import defineSchema, lww, counter, set, conflict from '@accordsync/client'.
+2. A module that opens one client per app: AccordClient.open({ schema, storage: new
+   IndexedDbStorage('<app>'), transport: httpTransport({ url: <sync URL>, getToken }) }).
+   getToken returns the user's current JWT; it is called before every request.
+3. Call accord.start() after open and accord.stop() on logout/teardown.
+Write with accord.assign / inc / add / remove; read with accord.read(id). Re-render on
+accord.on('change', ...).
+Pick a merge rule for every field, deliberately:
+- lww(): the latest write wins. Names, notes, simple scalars.
+- counter(): every increment is summed, none is lost. Quantities, stock adjustments.
+- set(): add-wins set of elements. Tags, assigned people, attached documents.
+- conflict(): concurrent values are all kept and flagged; a person decides. Use it for
+  status, approvals, amounts and anything with money or legal weight. Never lww() there.
+UI:
+- accord.on("refused", (r) => ...): the write was already rolled back; tell the user (r.reason).
+- accord.conflicts() lists conflict() fields with all values; show them where someone can
+  choose, then accord.resolve(record, field, value).
+- Show pending writes / last error from accord.status().
+Do not:
+- set deviceId: the client generates and stores one; a fixed id can get writes refused.
+- check the network before writing: writes are local and sync catches up.
+- edit or replay ops, or write to the accord_ tables yourself.
+Verify: open the app in two browser profiles as users with the same scope, write in both while
+one is offline (DevTools), reconnect, and check both show the same data and the conflict.
+Docs: https://accord.benhattab.pro/docs/client/ https://accord.benhattab.pro/docs/schema/
+```

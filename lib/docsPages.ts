@@ -44,12 +44,17 @@ export const docsPages = [
       { key: "conflicts", snippets: ["client.conflicts"] },
       { key: "events", snippets: ["client.events"] },
       { key: "storage" },
+      { key: "agent", snippets: ["client.agent"] },
     ],
   },
   {
     slug: "react",
     source: "packages/react/README.md",
-    sections: [{ key: "hooks", snippets: ["react.hooks"] }, { key: "rendering" }],
+    sections: [
+      { key: "hooks", snippets: ["react.hooks"] },
+      { key: "rendering" },
+      { key: "agent", snippets: ["react.agent"] },
+    ],
   },
   {
     slug: "react-native",
@@ -58,6 +63,7 @@ export const docsPages = [
       { key: "install", snippets: ["rn.install", "rn.polyfill"] },
       { key: "open", snippets: ["rn.open"] },
       { key: "lifecycle", snippets: ["rn.lifecycle"] },
+      { key: "agent", snippets: ["rn.agent"] },
     ],
   },
   {
@@ -69,6 +75,7 @@ export const docsPages = [
       { key: "lifecycle", snippets: ["flutter.lifecycle"] },
       { key: "widgets", snippets: ["flutter.widgets"] },
       { key: "parity" },
+      { key: "agent", snippets: ["flutter.agent"] },
     ],
   },
   {
@@ -93,6 +100,7 @@ export const docsPages = [
       { key: "django", snippets: ["python.django"] },
       { key: "migrate", snippets: ["python.migrate"] },
       { key: "parity" },
+      { key: "agent", snippets: ["python.agent"] },
     ],
   },
   {

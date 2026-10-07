@@ -486,6 +486,12 @@ export const fr: Content = {
               "`MemoryStorage` : tests ; les écritures non synchronisées sont perdues au redémarrage.",
             ],
           },
+          agent: {
+            title: "Prompt pour un agent IA",
+            body: [
+              "Copiez ce prompt dans votre agent de code (Claude Code, Cursor, Copilot) pour ajouter Accord à une app existante sur cette plateforme. Il indique quoi installer et créer, comment choisir les merge rules, quoi montrer aux utilisateurs, quoi éviter et comment vérifier le résultat.",
+            ],
+          },
         },
       },
       react: {
@@ -500,6 +506,12 @@ export const fr: Content = {
             title: "Ré-affichage",
             body: [
               "Un composant n'est ré-affiché que si ce qu'il lit a changé : un enregistrement inchangé garde la même valeur, et React l'ignore.",
+            ],
+          },
+          agent: {
+            title: "Prompt pour un agent IA",
+            body: [
+              "Copiez ce prompt dans votre agent de code (Claude Code, Cursor, Copilot) pour ajouter Accord à une app existante sur cette plateforme. Il indique quoi installer et créer, comment choisir les merge rules, quoi montrer aux utilisateurs, quoi éviter et comment vérifier le résultat.",
             ],
           },
         },
@@ -527,6 +539,12 @@ export const fr: Content = {
             title: "Synchroniser selon le cycle de vie",
             body: [
               "Synchronisez au premier plan, mettez en pause en arrière-plan, et synchronisez dès que le réseau revient. Les écritures n'attendent jamais rien de tout cela.",
+            ],
+          },
+          agent: {
+            title: "Prompt pour un agent IA",
+            body: [
+              "Copiez ce prompt dans votre agent de code (Claude Code, Cursor, Copilot) pour ajouter Accord à une app existante sur cette plateforme. Il indique quoi installer et créer, comment choisir les merge rules, quoi montrer aux utilisateurs, quoi éviter et comment vérifier le résultat.",
             ],
           },
         },
@@ -566,6 +584,12 @@ export const fr: Content = {
             title: "Le même comportement qu'en TypeScript",
             body: [
               "Le cœur Dart passe les vecteurs de référence partagés dans tous les ordres de livraison, et reproduit octet pour octet les instantanés de scénarios aléatoires générés par le cœur TypeScript. En CI, des clients Dart et TypeScript travaillent ensemble contre le vrai serveur, sur un réseau qui perd requêtes et réponses, et doivent finir avec des données identiques.",
+            ],
+          },
+          agent: {
+            title: "Prompt pour un agent IA",
+            body: [
+              "Copiez ce prompt dans votre agent de code (Claude Code, Cursor, Copilot) pour ajouter Accord à une app existante sur cette plateforme. Il indique quoi installer et créer, comment choisir les merge rules, quoi montrer aux utilisateurs, quoi éviter et comment vérifier le résultat.",
             ],
           },
         },
@@ -657,6 +681,12 @@ export const fr: Content = {
             title: "Le même comportement qu'en TypeScript",
             body: [
               "Le cœur Python passe les vecteurs de référence partagés dans tous les ordres de livraison, et reproduit octet pour octet les instantanés de scénarios aléatoires générés par le cœur TypeScript. En CI, la suite de conformité serveur tourne contre le serveur Python et ses applis d'exemple FastAPI et Django ; le client Python tourne contre le vrai serveur TypeScript, seul et avec des appareils TypeScript ; et une flotte mixte fait tourner les serveurs TypeScript et Python sur une même base en même temps, sur un réseau qui perd requêtes et réponses. Chaque appareil doit finir avec des données identiques.",
+            ],
+          },
+          agent: {
+            title: "Prompt pour un agent IA",
+            body: [
+              "Copiez ce prompt dans votre agent de code (Claude Code, Cursor, Copilot) pour ajouter Accord à une app existante sur cette plateforme. Il indique quoi installer et créer, comment choisir les merge rules, quoi montrer aux utilisateurs, quoi éviter et comment vérifier le résultat.",
             ],
           },
         },

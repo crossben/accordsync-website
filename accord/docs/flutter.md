@@ -102,3 +102,39 @@ with identical data.
 - [ ] Refusals are shown to the user (`accord.refusals`).
 - [ ] Conflicts are shown where the user can decide (`ConflictsBuilder`).
 - [ ] The device database is protected like the rest of your app's data. Accord does not encrypt it.
+
+## Prompt for an AI coding agent
+
+Copy this into your coding agent (Claude Code, Cursor, Copilot) to add Accord to an existing app.
+
+```text
+Integrate Accord (accordsync_flutter 0.3.x) into this Flutter app.
+Install: flutter pub add accordsync_flutter:^0.3.0 drift_flutter
+Create:
+1. The same schema as the Accord server with defineSchema({...}) and lww(), counter(), set(),
+   conflict() from package:accordsync_flutter/accordsync_flutter.dart.
+2. openAccord(getToken): AccordClient.open(schema:, storage: DriftStorage(AccordDatabase(
+   driftDatabase(name: 'accord')), closeDatabase: true), transport: HttpTransport(url:, getToken:)).
+   If the app already has a drift database, pass it: DriftStorage(appDatabase).
+3. Wrap the app in AccordProvider, then AccordLifecycle with client and online (a bool stream
+   from the connectivity package the app already uses), as in the docs page.
+Read with RecordBuilder(record:, builder:); write with accord.assign / inc / add / remove.
+Pick a merge rule for every field, deliberately:
+- lww(): the latest write wins. Names, notes, simple scalars.
+- counter(): every increment is summed, none is lost. Quantities, stock adjustments.
+- set(): add-wins set of elements. Tags, assigned people, attached documents.
+- conflict(): concurrent values are all kept and flagged; a person decides. Use it for
+  status, approvals, amounts and anything with money or legal weight. Never lww() there.
+UI:
+- Listen to accord.refusals: each write is already rolled back; tell the user.
+- ConflictsBuilder: show every value where someone can choose, then
+  accord.resolve(record, field, value).
+- SyncStatusBuilder for pending writes, last sync and last error.
+Do not:
+- set deviceId: the client generates and stores one; a fixed id can get writes refused.
+- check the network before writing: writes are local and sync catches up.
+- edit or replay ops, or write to the accord_ tables yourself.
+Verify: run two devices or emulators, put one in airplane mode, write on both, reconnect, and
+check both show the same data and the conflict.
+Docs: https://accord.benhattab.pro/docs/flutter/ https://accord.benhattab.pro/docs/schema/
+```

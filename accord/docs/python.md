@@ -171,3 +171,37 @@ Each run checks every device ends with identical data.
 - [ ] Migrations run on deploy, and compaction runs once per interval (in-process or cron).
 - [ ] The device database is protected like the rest of your program's data. Accord does not
       encrypt it.
+
+## Prompt for an AI coding agent
+
+Copy this into your coding agent (Claude Code, Cursor, Copilot) to add Accord to an existing app.
+
+```text
+Integrate the Accord client (accordsync 0.3.x) into this Python program.
+Install: pip install "accordsync>=0.3,<0.4" (Python 3.11+).
+Create:
+1. The same schema as the Accord server: define_schema({...}) with lww(), counter(), set_(),
+   conflict() from accordsync (set_ has a trailing underscore).
+2. One client: AccordClient.open(schema=schema, storage=SqliteStorage("accord.db"),
+   transport=HttpTransport(<sync URL>, get_token=get_token)); get_token returns the current JWT.
+3. accord.start() for background sync in a thread, or accord.sync() for one round (scripts,
+   cron); accord.close() at shutdown.
+Write with accord.assign / inc / add / remove; read with accord.read(record).
+Pick a merge rule for every field, deliberately:
+- lww(): the latest write wins. Names, notes, simple scalars.
+- counter(): every increment is summed, none is lost. Quantities, stock adjustments.
+- set_(): add-wins set of elements. Tags, assigned people, attached documents.
+- conflict(): concurrent values are all kept and flagged; a person decides. Use it for
+  status, approvals, amounts and anything with money or legal weight. Never lww() there.
+Handling:
+- accord.on("refused", ...): the write was already rolled back; report r.record, r.field, r.reason.
+- accord.conflicts(): show c.values to someone who can choose, then
+  accord.resolve(c.record, c.field, value).
+Do not:
+- set device_id: the client generates and stores one; a fixed id can get writes refused.
+- check the network before writing: writes are local and sync catches up.
+- edit or replay ops, or write to the accord_ tables yourself.
+Verify: run two copies with different SQLite files, write in both while one has no network,
+sync both, and check accord.read() matches and the conflict is listed.
+Docs: https://accord.benhattab.pro/docs/python/ https://accord.benhattab.pro/docs/schema/
+```

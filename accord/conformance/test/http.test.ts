@@ -108,17 +108,26 @@ describe('HTTP, authentication and errors (docs/protocol.md)', () => {
   });
 
   it('429 with Retry-After (whole seconds) when a device exceeds its rate limit', async () => {
+    // Bursts back to back until the bucket runs dry. One burst of burst + 50 trips the limit only
+    // on a server answering faster than the bucket refills during the burst; a full framework
+    // under PHP-FPM is not, so later bursts start from a partly drained bucket. Any server faster
+    // than the refill rate (perDevice.perMinute / 60 per second) ends up refusing.
     const n = profile.rateLimit.perDevice.burst + 50;
     // Empty pushes: concurrent pulls from one device are not something clients do.
-    const results = await Promise.all(
-      Array.from({ length: n }, () =>
-        fetch(`${ACCORD_URL}/v1/push`, {
-          method: 'POST',
-          headers: alice.headers({ 'Content-Type': 'application/json' }),
-          body: '{"ops":[]}',
-        }),
-      ),
-    );
+    const results: Response[] = [];
+    for (let burst = 0; burst < 10 && !results.some((r) => r.status === 429); burst++) {
+      results.push(
+        ...(await Promise.all(
+          Array.from({ length: n }, () =>
+            fetch(`${ACCORD_URL}/v1/push`, {
+              method: 'POST',
+              headers: alice.headers({ 'Content-Type': 'application/json' }),
+              body: '{"ops":[]}',
+            }),
+          ),
+        )),
+      );
+    }
     const limited = results.filter((r) => r.status === 429);
     expect(limited.length).toBeGreaterThan(0);
     expect(results.every((r) => r.status === 200 || r.status === 429)).toBe(true);

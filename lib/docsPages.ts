@@ -104,6 +104,19 @@ export const docsPages = [
     ],
   },
   {
+    slug: "java",
+    source: "docs/java.md",
+    sections: [
+      { key: "install", snippets: ["java.install", "java.gradle"] },
+      { key: "open", snippets: ["java.open"] },
+      { key: "conflicts", snippets: ["java.conflicts"] },
+      { key: "server", snippets: ["java.server"] },
+      { key: "migrate", snippets: ["java.migrate"] },
+      { key: "parity" },
+      { key: "agent", snippets: ["java.agent"] },
+    ],
+  },
+  {
     slug: "server",
     source: "README.md",
     sections: [

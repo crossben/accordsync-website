@@ -432,6 +432,7 @@ async function pullOnce(
       if (keysChanged) {
         delta = await scopeDelta(
           trx as unknown as Db,
+          cursor,
           before,
           read,
           ctx.def.limits?.maxScopeDelta ?? 2000,
@@ -558,50 +559,63 @@ async function pullOnce(
 }
 
 /**
- * What a change of read keys means for a device: the history of every record now visible that was
- * not visible before, and an exit for every record no longer visible at all. Computed from current
- * scopes, so a record that moved since the device's cursor is still right; extra history or a
- * repeated exit later in the feed is harmless (ops are idempotent). `undefined` when the change
- * touches more than `max` records: a full resync is cheaper then.
+ * What a change of read keys means for a device at `cursor`: the history of every record visible
+ * now (under `after`) that it did not have, and an exit for every record it had that it may no
+ * longer see. "Had" is judged at the cursor: a record's scopes as of `cursor` (the `scopes_before`
+ * of its first scope row above the cursor, or its current scopes if none) against the keys the
+ * device had (`before`). The feed from the cursor is then read with the new keys, so a record that
+ * moved since the cursor is handled by its scope rows on top of this (ADR-0011, 2026-10-07 b).
+ * Extra history or a repeated exit later in the feed is harmless (ops are idempotent).
+ * `undefined` when the change touches more than `max` records: a full resync is cheaper then.
  */
 async function scopeDelta(
   db: Db,
+  cursor: number,
   before: readonly string[],
   after: readonly string[],
   max: number,
 ): Promise<{ history: { kind: string; op: unknown }[]; exits: string[] } | undefined> {
   const was = [...before];
   const now = [...after];
-  const entering = await db
-    .selectFrom('records')
-    .select('record')
-    .where(sql<boolean>`scopes && ${now}::text[] and not (scopes && ${was}::text[])`)
-    .limit(max + 1)
-    .execute();
-  const leaving = await db
-    .selectFrom('records')
-    .select('record')
-    .where(sql<boolean>`scopes && ${was}::text[] and not (scopes && ${now}::text[])`)
-    .limit(max + 1)
-    .execute();
-  if (entering.length + leaving.length > max) return undefined;
+  // Each record's scopes at the cursor. Records unchanged since: their current scopes (the scopes
+  // index narrows them to the two key sets). Records that changed since: the scopes before their
+  // first change above the cursor (empty for a record created since, so it never counts).
+  const { rows } = await sql<{ record: string; entering: boolean }>`
+    with moved as (
+      select distinct on (record) record, scopes_before as scopes
+      from feed
+      where kind = 'scope' and pos > ${String(cursor)}::bigint
+      order by record, pos, seq
+    ), at_cursor as (
+      select r.record, r.scopes from records r
+      where r.scopes && ${[...new Set([...was, ...now])]}::text[]
+        and not exists (select 1 from moved m where m.record = r.record)
+      union all
+      select m.record, m.scopes from moved m
+    )
+    select record, scopes && ${now}::text[] as entering from at_cursor
+    where (scopes && ${now}::text[]) <> (scopes && ${was}::text[])
+    order by record
+    limit ${max + 1}`.execute(db);
+  if (rows.length > max) return undefined;
+  const entering = rows.filter((r) => r.entering).map((r) => r.record);
   const history =
     entering.length === 0
       ? []
       : await db
           .selectFrom('feed')
           .select(['kind', 'op'])
-          .where(
-            'record',
-            'in',
-            entering.map((r) => r.record),
-          )
+          .where('record', 'in', entering)
           .where('kind', 'in', ['op', 'snapshot'])
+          // Only what was there at the cursor: the feed from the cursor brings the rest, and only
+          // while the record stays visible. Unbounded, a record that left the caller's scope after
+          // the cursor would leak every op written since (ADR-0011, update 2026-10-07 b).
+          .where('pos', '<=', cursor as never)
           .orderBy('record')
           .orderBy('pos')
           .orderBy('seq')
           .execute();
-  return { history, exits: leaving.map((r) => r.record) };
+  return { history, exits: rows.filter((r) => !r.entering).map((r) => r.record) };
 }
 
 /** A surrogate that is not half of a pair (with the u flag, pairs read as one code point). */

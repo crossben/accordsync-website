@@ -2,7 +2,7 @@
 
 Accord has a PHP server that speaks the same protocol, merges by the same rules and uses the same
 PostgreSQL schema as `@accordsync/server`, so every Accord client (TypeScript, React Native,
-Flutter, Python) syncs with it unchanged. Serve sync from your Laravel or Symfony backend instead of
+Flutter, Python, Java) syncs with it unchanged. Serve sync from your Laravel or Symfony backend instead of
 running a Node.js service. It lives in its own repository,
 [crossben/accordsync-php](https://github.com/crossben/accordsync-php).
 

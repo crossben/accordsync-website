@@ -305,6 +305,110 @@ describe('scope changes from new claims (ADR-0011) and retired devices (ADR-0005
     );
   });
 
+  // A record moving while the claims change: what the device had at its cursor decides what
+  // enters, not the record's scopes now (ADR-0011, update 2026-10-07 b).
+  const historyOf = (items: PullItem[], record: string) =>
+    items.flatMap((i) => (i.type === 'op' && i.op.record === record ? [i.op.op_id] : []));
+  const thiesDossier = async (alice: Device, bob: Device) => {
+    await bob.pushOk([
+      bob.assign('dossier:4', 'zone', 'thies'),
+      bob.inc('dossier:4', 'visits', 2),
+      bob.inc('dossier:4', 'visits', 5),
+    ]);
+    // Invisible to Alice's keys (agent:alice, zone:dakar) at her cursor.
+    expect(historyOf(await alice.pullAll(), 'dossier:4')).toEqual([]);
+  };
+
+  it('a record moving into a key the old and new claims share, as the claims change, comes with its whole history', async () => {
+    const { alice, bob } = await seed(0);
+    await thiesDossier(alice, bob);
+    alice.jwt = await control.token('alice', { zones: ['dakar', 'thies'] });
+    await bob.pushOk([bob.assign('dossier:4', 'agent', 'alice')]);
+    await bob.pushOk([bob.inc('dossier:4', 'visits')]);
+    const items = await alice.pullAll();
+    expect(historyOf(items, 'dossier:4')).toEqual([
+      'bob-phone:1',
+      'bob-phone:2',
+      'bob-phone:3',
+      'bob-phone:4',
+      'bob-phone:5',
+    ]);
+    expect(items).not.toContainEqual({ type: 'exit', record: 'dossier:4' });
+    expect(await alice.pullAll()).toEqual([]);
+  });
+
+  it('the same when the record moved after the cursor but before the claims changed', async () => {
+    const { alice, bob } = await seed(0);
+    await thiesDossier(alice, bob);
+    await bob.pushOk([bob.assign('dossier:4', 'agent', 'alice')]);
+    alice.jwt = await control.token('alice', { zones: ['dakar', 'thies'] });
+    const items = await alice.pullAll();
+    expect(historyOf(items, 'dossier:4')).toEqual([
+      'bob-phone:1',
+      'bob-phone:2',
+      'bob-phone:3',
+      'bob-phone:4',
+    ]);
+    expect(await alice.pullAll()).toEqual([]);
+  });
+
+  it('the same when the answer carrying it was lost: the retry sends the whole history again', async () => {
+    const { alice, bob } = await seed(0);
+    await thiesDossier(alice, bob);
+    await bob.pushOk([bob.assign('dossier:4', 'agent', 'alice')]);
+    alice.jwt = await control.token('alice', { zones: ['dakar', 'thies'] });
+    const all = ['bob-phone:1', 'bob-phone:2', 'bob-phone:3', 'bob-phone:4'];
+    expect(historyOf((await alice.page(alice.cursor)).items, 'dossier:4')).toEqual(all); // lost
+    expect(historyOf(await alice.pullAll(), 'dossier:4')).toEqual(all);
+    expect(await alice.pullAll()).toEqual([]);
+  });
+
+  it('a record visible at the cursor under the new claims but moved out since sends no op written after the cursor', async () => {
+    const { alice, bob } = await seed(0);
+    await thiesDossier(alice, bob);
+    // After Alice's cursor, the record leaves Thiès for a zone Alice never gets, then changes.
+    const carol = await Device.of('carol-phone', 'carol', { zones: ['thies', 'kaolack'] });
+    await carol.pushOk([carol.assign('dossier:4', 'zone', 'kaolack')]);
+    await carol.pushOk([carol.inc('dossier:4', 'visits', 100)]); // never Alice's to see
+    alice.jwt = await control.token('alice', { zones: ['dakar', 'thies'] });
+    const items = await alice.pullAll();
+    // What she could see at her cursor under the new claims, then the exit; nothing after it.
+    expect(historyOf(items, 'dossier:4')).toEqual(['bob-phone:1', 'bob-phone:2', 'bob-phone:3']);
+    expect(items.filter((i) => i.type === 'exit')).toEqual([{ type: 'exit', record: 'dossier:4' }]);
+    const exitAt = items.findIndex((i) => i.type === 'exit' && i.record === 'dossier:4');
+    expect(historyOf(items.slice(exitAt + 1), 'dossier:4')).toEqual([]);
+    expect(await alice.pullAll()).toEqual([]);
+  });
+
+  it('a record moving out of a key only the old claims had into a shared key ends up with its whole history', async () => {
+    const { alice } = await seed(0);
+    const carol = await Device.of('carol-phone', 'carol', { zones: ['dakar', 'kaolack'] });
+    await carol.pushOk([
+      carol.assign('dossier:d', 'zone', 'dakar'),
+      carol.inc('dossier:d', 'visits'),
+    ]);
+    expect(historyOf(await alice.pullAll(), 'dossier:d')).toEqual([
+      'carol-phone:1',
+      'carol-phone:2',
+    ]);
+    // Dakar is dropped while the record leaves it for agent:alice, a key Alice keeps.
+    alice.jwt = await control.token('alice', { zones: ['thies'] });
+    await carol.pushOk([
+      carol.assign('dossier:d', 'agent', 'alice'),
+      carol.assign('dossier:d', 'zone', 'kaolack'),
+    ]);
+    const items = await alice.pullAll();
+    // Whatever exits are sent, the last word about the record is its whole history.
+    const lastExit = items.findLastIndex((i) => i.type === 'exit' && i.record === 'dossier:d');
+    expect(historyOf(items.slice(lastExit + 1), 'dossier:d')).toEqual([
+      'carol-phone:1',
+      'carol-phone:2',
+      'carol-phone:3',
+      'carol-phone:4',
+    ]);
+    expect(await alice.pullAll()).toEqual([]);
+  });
+
   it(`answers exactly { resync_required: true } when more than maxScopeDelta (${profile.limits.maxScopeDelta}) records change`, async () => {
     const { alice } = await seed(profile.limits.maxScopeDelta + 1);
     alice.jwt = await control.token('alice', { zones: ['dakar', 'thies'] });

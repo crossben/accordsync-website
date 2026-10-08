@@ -5,7 +5,7 @@
 Apps keep working with no connection. When it comes back, Accord passes every change along, and
 every device ends up with the same data. Every device, in accord.
 
-> **Status: v0.3.0.** Pre-1.0: the API may still change between minor versions.
+> **Status: v0.3.1.** Pre-1.0: the API may still change between minor versions.
 > Design decisions are recorded in [`docs/adr/`](docs/adr/).
 
 ## What it will be
@@ -94,6 +94,7 @@ approve it. To add a package: `safe-install add @accordsync/client` (or `npm ins
 | [docs/flutter.md](docs/flutter.md)            | Dart and Flutter packages: drift storage, widgets, lifecycle      |
 | [docs/php.md](docs/php.md)                    | PHP server for Laravel, Symfony or plain PHP (PSR-15)             |
 | [docs/python.md](docs/python.md)              | Python client, and the server for FastAPI or Django               |
+| [docs/java.md](docs/java.md)                  | Java client, and the server for Spring Boot                       |
 | [docs/scopes.md](docs/scopes.md)              | Tested scope patterns: personal, team, supervisor, tenant, shared |
 | [conformance/](conformance/README.md)         | Server conformance suite: run it against any Accord server        |
 

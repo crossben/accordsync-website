@@ -83,6 +83,28 @@ export const DOC_SNIPPETS = {
   "python.django": { file: "docs/python.md", marker: '"accordsync_django"]' },
   "python.migrate": { file: "docs/python.md", marker: "python manage.py accord_migrate" },
 
+  // Java
+  "java.install": {
+    file: "docs/java.md",
+    marker: "<artifactId>accordsync-spring-boot-starter</artifactId>",
+  },
+  "java.gradle": {
+    file: "docs/java.md",
+    marker: 'implementation("io.github.crossben:accordsync-client:0.3.1")',
+  },
+  "java.open": {
+    file: "docs/java.md",
+    marker: "AccordClient accord = AccordClient.open(AccordClient.options()",
+  },
+  "java.conflicts": { file: "docs/java.md", marker: "for (ConflictInfo c : accord.conflicts())" },
+  "java.server": { file: "docs/java.md", marker: "public ServerDefinition accordDefinition()" },
+  "java.migrate": { file: "docs/java.md", marker: "accord.migrate-on-startup=true" },
+  "java.agent": {
+    file: "docs/java.md",
+    marker:
+      "Integrate the Accord client (io.github.crossben:accordsync-client 0.3.x) into this Java program.",
+  },
+
   // Server
   "server.define": { file: "README.md", marker: "export default defineServer({" },
 
@@ -118,6 +140,7 @@ export const DOC_SOURCES = [
   "docs/flutter.md",
   "docs/php.md",
   "docs/python.md",
+  "docs/java.md",
   "README.md",
   "docs/scopes.md",
   "docs/protocol.md",

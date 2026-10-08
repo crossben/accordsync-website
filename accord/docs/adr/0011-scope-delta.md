@@ -72,3 +72,50 @@ open can the returned cursor equal the request cursor; the next pull then resend
 more, which is harmless (ops and snapshots are idempotent, an exit for an absent record does
 nothing), and the first pull whose cursor has moved clears it. Claims that change again while a
 delta is pending are folded into one delta from `delta_keys`, so nothing is lost either way.
+
+## Update (2026-10-07 b): the delta is judged at the device's cursor
+
+The Java mixed-server fleet found a record that never reached a device. Moussa gained zone `thies`
+while `dossier:4` (zone `thies` only, invisible to his old keys) was given `agent=moussa`. The delta
+was computed from **current** scopes, where his old keys already "saw" the record through
+`agent:moussa`, so it did not count as entering; and the feed read its scope row with the **new**
+keys, where both sides were visible, so it was not a move-in either. He received the op that moved
+it, never its history. No client or protocol change, no migration.
+
+**The rule.** The device holds, at its cursor `C`, exactly the records visible at `C` under the keys
+it had (`before`, chosen as in the update above). The delta turns that into the records visible at
+`C` under the new keys `read`; the feed from `C`, read with `read` as always, then carries every
+later move. So, for a pull from `C > 0` whose `before` differs from `read`:
+
+1. **A record's scopes at `C`**, `S_C(r)`: if the feed has a `scope` row for `r` with `pos > C`, the
+   `scopes_before` of the first one (lowest `(pos, seq)`); otherwise `records.scopes`. A record
+   created after `C` has `S_C = []` (its first scope row has `scopes_before = []`) and never counts.
+   Compaction keeps every row above the lowest live device's cursor, so these rows are there.
+2. **Entering**: `S_C(r) ∩ read ≠ ∅` and `S_C(r) ∩ before = ∅`. Send the record's whole history
+   (snapshot and ops, in `(pos, seq)` order), as before.
+3. **Leaving**: `S_C(r) ∩ before ≠ ∅` and `S_C(r) ∩ read = ∅`. Send one `exit`.
+4. Entering plus leaving over `maxScopeDelta`: `resync_required`, as before.
+5. Delta items come first, then the feed from `C` with `read` (scope rows are a move in when
+   `scopes_before` misses `read` and `scopes` meets it, an exit the other way round). Ops already
+   sent in the same answer are not repeated.
+
+Candidates are the records whose current scopes meet `before ∪ read` and have no scope row above
+`C`, plus the first scope row above `C` of each record that moved (an index range on `(pos, seq)`):
+one query, limited to `maxScopeDelta + 1` rows. On a retry of a pending delta, `C` is the retry's
+cursor and `before = delta_keys`, so a lost answer is rebuilt the same way.
+
+Some cases: a record invisible at `C`, then moved into a key both key sets share, enters with its
+whole history (the bug). A record moved after `C` from a key only `before` had into a shared key gets
+an exit (it was visible at `C` under `before`, not under `read`), then its whole history from the
+feed's move-in row. A record visible at `C` through a shared key, then moved to a key only `before`
+has, gets no delta item and one exit from the feed.
+
+### Bound on the history sent (2026-10-07, same update)
+
+The history sent for an entering record is bounded to feed rows at or below the cursor
+(`pos <= C`). It rebuilds what the device would have had at C under its new keys; the feed from C
+then brings every later op, and only while the record stays visible to them. Without the bound, a
+record visible at C under the new keys but moved out of the caller's scope after C leaked every op
+written since it left. The conformance test "a record visible at the cursor under the new claims
+but moved out since sends no op written after the cursor" guards it. Every implementation applies
+the same bound.

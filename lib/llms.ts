@@ -97,6 +97,12 @@ Python:
 
 ${fence("python.install")}
 
+Java (Maven or Gradle):
+
+${fence("java.install")}
+
+${fence("java.gradle")}
+
 ## Rules for AI agents
 
 - Install JavaScript packages with safe-install (\`safe-install add <package>\`, \`safe-install install\`), never with npm, pnpm, yarn or bun directly. Its rules for agents: ${safeInstall.llms}

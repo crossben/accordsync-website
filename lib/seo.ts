@@ -18,8 +18,8 @@ function software(content: Content) {
     description: content.meta.description,
     url: `${SITE}/`,
     codeRepository: repo.home,
-    // facts.clients: TypeScript, Dart/Flutter and Python clients; TypeScript, PHP, Python servers.
-    programmingLanguage: ["TypeScript", "Dart", "PHP", "Python"],
+    // facts.clients: TypeScript, Dart/Flutter, Python and Java clients; TypeScript, PHP, Python, Java servers.
+    programmingLanguage: ["TypeScript", "Dart", "PHP", "Python", "Java"],
     license: `https://spdx.org/licenses/${licence.accord}.html`,
     softwareVersion: version.number,
     applicationCategory: "DeveloperApplication",
@@ -28,7 +28,7 @@ function software(content: Content) {
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
     author,
     keywords:
-      "offline-first sync, local-first, sync engine, CRDT, conflict resolution, Flutter offline sync, React Native offline sync, Laravel sync server, Symfony, Django sync, FastAPI, PostgreSQL, self-hosted",
+      "offline-first sync, local-first, sync engine, CRDT, conflict resolution, Flutter offline sync, React Native offline sync, Laravel sync server, Symfony, Django sync, FastAPI, Spring Boot sync server, PostgreSQL, self-hosted",
   };
 }
 

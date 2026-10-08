@@ -1,6 +1,6 @@
 {
   "name": "@accordsync/server",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Accord sync server (Node, Hono, PostgreSQL)",
   "keywords": [
     "offline-first",

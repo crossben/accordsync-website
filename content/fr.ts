@@ -11,7 +11,7 @@ export const fr: Content = {
   meta: {
     title: "Accord — la synchronisation offline-first qui reste correcte quand le réseau ment",
     description:
-      "Accord est un moteur de synchronisation offline-first open source et auto-hébergé : écriture locale d'abord, opérations plutôt qu'écrasements, règles de fusion déclarées, et des conflits que votre appli tranche. Clients et serveurs en TypeScript, Dart, PHP et Python, sur PostgreSQL.",
+      "Accord est un moteur de synchronisation offline-first open source et auto-hébergé : écriture locale d'abord, opérations plutôt qu'écrasements, règles de fusion déclarées, et des conflits que votre appli tranche. Clients et serveurs en TypeScript, Dart, PHP, Python et Java, sur PostgreSQL.",
   },
 
   header: {
@@ -414,6 +414,7 @@ export const fr: Content = {
       flutter: "Synchronisation hors ligne Flutter avec drift (Dart)",
       php: "Serveur de synchronisation Laravel et Symfony (PHP)",
       python: "Synchronisation hors ligne en Python, serveur FastAPI et Django",
+      java: "Synchronisation hors ligne en Java, serveur Spring Boot",
       server: "Serveur de synchronisation auto-hébergé sur PostgreSQL",
       scopes: "Scopes de synchronisation : qui lit et écrit quels enregistrements",
       protocol: "Protocole de synchronisation : push, pull et resync en HTTPS",
@@ -703,6 +704,57 @@ export const fr: Content = {
             title: "Le même comportement qu'en TypeScript",
             body: [
               "Le cœur Python passe les vecteurs de référence partagés dans tous les ordres de livraison, et reproduit octet pour octet les instantanés de scénarios aléatoires générés par le cœur TypeScript. En CI, la suite de conformité serveur tourne contre le serveur Python et ses applis d'exemple FastAPI et Django ; le client Python tourne contre le vrai serveur TypeScript, seul et avec des appareils TypeScript ; et une flotte mixte fait tourner les serveurs TypeScript et Python sur une même base en même temps, sur un réseau qui perd requêtes et réponses. Chaque appareil doit finir avec des données identiques.",
+            ],
+          },
+          agent: {
+            title: "Prompt pour un agent IA",
+            body: [
+              "Copiez ce prompt dans votre agent de code (Claude Code, Cursor, Copilot) pour ajouter Accord à une app existante sur cette plateforme. Il indique quoi installer et créer, comment choisir les merge rules, quoi montrer aux utilisateurs, quoi éviter et comment vérifier le résultat.",
+            ],
+          },
+        },
+      },
+      java: {
+        title: "Java",
+        description:
+          "Accord pour Java et Kotlin : un client qui écrit hors ligne puis se synchronise, et le serveur de sync pour Spring Boot.",
+        intro:
+          "Le client Java fait d'un programme Java ou Kotlin un appareil Accord : il écrit tout de suite dans SQLite et se synchronise comme un téléphone ou un navigateur. Le serveur Java parle le même protocole, fusionne selon les mêmes règles et utilise le même schéma PostgreSQL que `@accordsync/server` : tous les clients Accord se synchronisent avec lui sans changement. Java 17+, sur Maven Central sous `io.github.crossben`.",
+        sections: {
+          install: {
+            title: "Installation",
+            body: [
+              "`accordsync-client` est le client ; `sqlite-jdbc` est facultatif, pour son stockage SQLite. `accordsync-spring-boot-starter` sert la sync depuis Spring Boot 4.1 en s'appuyant sur `accordsync-server`, indépendant de tout framework.",
+            ],
+          },
+          open: {
+            title: "Ouvrir le client",
+            body: [
+              "Déclarez le même schéma que sur le serveur. Laissez l'identifiant d'appareil vide : le client en crée un avec `SecureRandom` et le garde. Le fournisseur de token renvoie le JWT courant de votre appli, et il est appelé avant chaque requête. Les écritures rendent la main dès qu'elles sont enregistrées sur l'appareil, en ligne ou non. Le client est thread-safe et `AutoCloseable` ; sur Android, implémentez `StorageAdapter` au lieu du stockage JDBC.",
+            ],
+          },
+          conflicts: {
+            title: "Conflits et refus",
+            body: [
+              "`accord.conflicts()` donne chaque champ en conflit avec ses valeurs ; tranchez avec `accord.resolve`. `onChange` signale les enregistrements dont l'état local a changé, par une écriture locale ou par la synchronisation. Les écritures refusées arrivent par `onRefused`, déjà annulées : prévenez l'utilisateur.",
+            ],
+          },
+          server: {
+            title: "Définir le serveur",
+            body: [
+              "Avec le starter, toute l'intégration tient en un bean `ServerDefinition`, avec les mêmes éléments que `defineServer` en TypeScript : le schéma, une fonction de scope par type d'enregistrement, les accès qu'un utilisateur tire de ses claims JWT, et la vérification des tokens. Le starter sert `/v1/push`, `/v1/pull` et `/health` sur la `DataSource` de l'appli ; `accord.path-prefix` les place sous un chemin.",
+            ],
+          },
+          migrate: {
+            title: "Migrations et compaction",
+            body: [
+              "Les migrations sont celles du serveur TypeScript, dans le même registre : une base migrée par l'un des serveurs est à jour pour l'autre. Le starter migre au démarrage et compacte à l'intervalle de la définition ; les deux prennent des verrous consultatifs PostgreSQL, donc plusieurs instances peuvent tourner en même temps. Les limites de débit sont gardées en mémoire, par instance.",
+            ],
+          },
+          parity: {
+            title: "Le même comportement qu'en TypeScript",
+            body: [
+              "Le cœur Java passe les vecteurs de référence partagés dans tous les ordres de livraison, ainsi que les vecteurs aléatoires générés par le cœur TypeScript. En CI, la suite de conformité serveur tourne contre le serveur Java et son appli d'exemple Spring Boot ; le client Java tourne contre le vrai serveur TypeScript, seul et avec des appareils TypeScript ; et une flotte mixte fait tourner les serveurs TypeScript et Java sur une même base en même temps, sur un réseau qui perd requêtes et réponses. Chaque appareil doit finir avec des données identiques.",
             ],
           },
           agent: {

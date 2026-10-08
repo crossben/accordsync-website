@@ -34,10 +34,10 @@ export const repo = {
 } as const;
 
 /**
- * Version. Source: app/CHANGELOG.md ("## [0.3.0] - 2026-10-07") and app/README.md's status note
- * ("Status: v0.3.0"). check-facts.mjs fails the build if either changes.
+ * Version. Source: app/CHANGELOG.md ("## [0.3.1] - 2026-10-08") and app/README.md's status note
+ * ("Status: v0.3.1"). check-facts.mjs fails the build if either changes.
  */
-export const version = { number: "0.3.0", date: "2026-10-07" } as const;
+export const version = { number: "0.3.1", date: "2026-10-08" } as const;
 
 /**
  * Licence. Source: app/README.md ("## Licence" → "[Apache-2.0](LICENSE)") and
@@ -137,8 +137,9 @@ export const screenshot = {
 
 /** Implementations: clients and servers, each documented in the Accord repository's docs/. */
 export const clients = {
-  clients: "TypeScript (browser + React Native), Dart/Flutter, Python",
-  servers: "TypeScript (Node), PHP (Laravel, Symfony), Python (FastAPI, Django)",
+  clients: "TypeScript (browser + React Native), Dart/Flutter, Python, Java",
+  servers:
+    "TypeScript (Node), PHP (Laravel, Symfony), Python (FastAPI, Django), Java (Spring Boot)",
 } as const;
 
 /**
@@ -168,7 +169,8 @@ export const safeInstall = {
 
 /**
  * Published packages per registry, and the per-language repositories. Source: the package tables in
- * app/README.md, docs/flutter.md, docs/php.md and docs/python.md (check-facts requires each name).
+ * app/README.md, docs/flutter.md, docs/php.md, docs/python.md and docs/java.md (check-facts requires
+ * each name).
  */
 export const registries = [
   {
@@ -208,6 +210,17 @@ export const registries = [
     ],
     url: (name: string) => `https://pypi.org/project/${name}/`,
   },
+  {
+    label: "Maven Central (Java)",
+    source: "docs/java.md",
+    packages: [
+      "accordsync-client",
+      "accordsync-spring-boot-starter",
+      "accordsync-server",
+      "accordsync-core",
+    ],
+    url: (name: string) => `https://central.sonatype.com/artifact/io.github.crossben/${name}`,
+  },
 ] as const;
 
 /** The other implementations' repositories, as linked from the Accord docs. */
@@ -226,6 +239,11 @@ export const languageRepos = [
     name: "accordsync-python",
     url: "https://github.com/crossben/accordsync-python",
     source: "docs/python.md",
+  },
+  {
+    name: "accordsync-java",
+    url: "https://github.com/crossben/accordsync-java",
+    source: "docs/java.md",
   },
 ] as const;
 

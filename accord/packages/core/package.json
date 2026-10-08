@@ -1,6 +1,6 @@
 {
   "name": "@accordsync/core",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Accord's pure merge core: hybrid logical clocks, operations and merge strategies",
   "keywords": [
     "offline-first",

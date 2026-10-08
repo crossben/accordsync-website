@@ -20,8 +20,8 @@
     "check:seo": "node scripts/check-seo.mjs"
   },
   "dependencies": {
-    "@accordsync/core": "0.3.1",
-    "@accordsync/simulator": "0.3.1",
+    "@accordsync/core": "0.3.2",
+    "@accordsync/simulator": "0.3.2",
     "@gsap/react": "^2.1.2",
     "gsap": "^3.15.0",
     "next": "16.3.8",

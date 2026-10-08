@@ -94,7 +94,7 @@ Copy this into your coding agent (Claude Code, Cursor, Copilot) to add Accord to
 
 ```text
 Integrate Accord (@accordsync/client 0.3.x) into this web app.
-Install: safe-install add @accordsync/client@^0.3.0
+Install: safe-install add @accordsync/client@^0.3.2
 Install with safe-install (https://safe-install.benhattab.pro/llms.txt), never npm/pnpm/yarn
 directly. Never approve install scripts yourself (no safe-install approve, --force, --yes or
 allowScripts edits): if a script is skipped, stop and tell me the package and its scripts.

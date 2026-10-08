@@ -26,7 +26,7 @@ Maven:
 <dependency>
   <groupId>io.github.crossben</groupId>
   <artifactId>accordsync-client</artifactId>
-  <version>0.3.1</version>
+  <version>0.3.2</version>
 </dependency>
 <dependency>
   <groupId>org.xerial</groupId>
@@ -38,16 +38,16 @@ Maven:
 <dependency>
   <groupId>io.github.crossben</groupId>
   <artifactId>accordsync-spring-boot-starter</artifactId>
-  <version>0.3.1</version>
+  <version>0.3.2</version>
 </dependency>
 ```
 
 Gradle:
 
 ```kotlin
-implementation("io.github.crossben:accordsync-client:0.3.1")
+implementation("io.github.crossben:accordsync-client:0.3.2")
 implementation("org.xerial:sqlite-jdbc:3.53.4.0")
-implementation("io.github.crossben:accordsync-spring-boot-starter:0.3.1")
+implementation("io.github.crossben:accordsync-spring-boot-starter:0.3.2")
 ```
 
 ## Open the client
@@ -177,7 +177,7 @@ Copy this into your coding agent (Claude Code, Cursor, Copilot) to add Accord to
 
 ```text
 Integrate the Accord client (io.github.crossben:accordsync-client 0.3.x) into this Java program.
-Install: add io.github.crossben:accordsync-client:0.3.1 and org.xerial:sqlite-jdbc (Java 17+).
+Install: add io.github.crossben:accordsync-client:0.3.2 and org.xerial:sqlite-jdbc (Java 17+).
 Create:
 1. The same schema as the Accord server: Schema.define(Map.of(...)) with lww(), counter(), set(),
    conflict() from io.github.crossben.accordsync.core.Strategy.

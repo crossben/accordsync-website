@@ -90,7 +90,7 @@ export const DOC_SNIPPETS = {
   },
   "java.gradle": {
     file: "docs/java.md",
-    marker: 'implementation("io.github.crossben:accordsync-client:0.3.1")',
+    marker: 'implementation("io.github.crossben:accordsync-client:0.3.2")',
   },
   "java.open": {
     file: "docs/java.md",

@@ -1,6 +1,6 @@
 {
   "name": "@accordsync/simulator",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Deterministic network and device simulator for Accord convergence tests",
   "keywords": [
     "offline-first",

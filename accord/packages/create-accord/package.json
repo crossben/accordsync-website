@@ -1,6 +1,6 @@
 {
   "name": "create-accord",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Scaffold an Accord project: npm create accord my-app",
   "license": "Apache-2.0",
   "type": "module",

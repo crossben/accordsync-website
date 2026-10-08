@@ -74,6 +74,8 @@ export class AccordClient {
   #chain: Promise<void> = Promise.resolve();
   #syncing: Promise<void> | undefined;
   #timer: ReturnType<typeof setTimeout> | undefined;
+  /** A write came in during a round: start another soon after it. */
+  #again = false;
   #running = false;
   #failures = 0;
   #lastSyncAt: number | undefined;
@@ -186,7 +188,14 @@ export class AccordClient {
 
   /** One full round: push the outbox, then pull every page. Concurrent calls share the round. */
   sync(): Promise<void> {
-    this.#syncing ??= this.#round().finally(() => (this.#syncing = undefined));
+    this.#syncing ??= this.#round().finally(() => {
+      this.#syncing = undefined;
+      // A write during the round is not in it: sync again soon, not after the interval.
+      if (this.#again) {
+        this.#again = false;
+        this.#schedule(50);
+      }
+    });
     return this.#syncing;
   }
 
@@ -333,9 +342,12 @@ export class AccordClient {
   #schedule(delay: number): void {
     clearTimeout(this.#timer);
     if (!this.#running) return;
-    this.#timer = setTimeout(() => {
+    const timer = setTimeout(() => {
       this.sync().then(
-        () => this.#schedule(this.#o.syncIntervalMs),
+        () => {
+          // Unless the round already asked for a sooner one.
+          if (this.#timer === timer) this.#schedule(this.#o.syncIntervalMs);
+        },
         (error: unknown) => {
           this.#failures++;
           this.#lastError = error;
@@ -348,11 +360,14 @@ export class AccordClient {
         },
       );
     }, delay);
+    this.#timer = timer;
   }
 
   /** After a write, sync shortly (writes in a burst share one round). */
   #soon(): void {
-    if (this.#running && this.#failures === 0) this.#schedule(50);
+    if (!this.#running || this.#failures !== 0) return;
+    if (this.#syncing) this.#again = true;
+    else this.#schedule(50);
   }
 
   #newWriter(resume: { hlc: ReturnType<typeof decodeHlc>; seq: number } | undefined): LocalWriter {

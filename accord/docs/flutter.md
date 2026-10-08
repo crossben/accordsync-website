@@ -109,7 +109,7 @@ Copy this into your coding agent (Claude Code, Cursor, Copilot) to add Accord to
 
 ```text
 Integrate Accord (accordsync_flutter 0.3.x) into this Flutter app.
-Install: flutter pub add accordsync_flutter:^0.3.0 drift_flutter
+Install: flutter pub add accordsync_flutter:^0.3.2 drift_flutter
 Create:
 1. The same schema as the Accord server with defineSchema({...}) and lww(), counter(), set(),
    conflict() from package:accordsync_flutter/accordsync_flutter.dart.

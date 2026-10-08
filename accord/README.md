@@ -5,7 +5,7 @@
 Apps keep working with no connection. When it comes back, Accord passes every change along, and
 every device ends up with the same data. Every device, in accord.
 
-> **Status: v0.3.1.** Pre-1.0: the API may still change between minor versions.
+> **Status: v0.3.2.** Pre-1.0: the API may still change between minor versions.
 > Design decisions are recorded in [`docs/adr/`](docs/adr/).
 
 ## What it will be
